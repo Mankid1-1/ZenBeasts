@@ -11,7 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.29.0",
+    "@coral-xyz/anchor": "^0.32.1",
     "@metaplex-foundation/mpl-token-metadata": "^3.2.0",
     "@solana/spl-token": "^0.4.7",
     "@solana/wallet-adapter-base": "^0.9.27",
