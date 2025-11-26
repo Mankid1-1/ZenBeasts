@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use anchor_spl::{associated_token::AssociatedToken, token::{self, Token, TokenAccount, Transfer}};
 use crate::state::{beast_account::BeastAccount, program_config::ProgramConfig};
 use crate::errors::ZenBeastsError;
 

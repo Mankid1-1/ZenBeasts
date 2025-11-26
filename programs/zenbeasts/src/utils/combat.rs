@@ -88,7 +88,7 @@ pub fn validate_combat_requirements(
 }
 
 /// Calculate the energy cost for using an ability
-pub fn calculate_ability_energy_cost(ability_type: u8, ability_level: u8) -> u8 {
+pub fn calculate_ability_energy_cost(_ability_type: u8, ability_level: u8) -> u8 {
     let base_cost = 20u8;
     let scaling = (ability_level as u16).checked_mul(2).unwrap_or(u16::MAX);
     let total_cost = base_cost as u16 + scaling;

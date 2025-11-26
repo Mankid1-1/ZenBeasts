@@ -34,7 +34,6 @@ pub fn handler(
     combat_winner_percentage: Option<u8>,
 ) -> Result<()> {
     let config = &mut ctx.accounts.config;
-    let clock = Clock::get()?;
 
     // Update activity_cooldown if provided
     if let Some(new_cooldown) = activity_cooldown {
