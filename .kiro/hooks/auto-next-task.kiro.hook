@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Auto-Start Next Task",
+  "description": "Monitors spec documents for task completion checkmarks and automatically initiates the next uncompleted task in the sequence",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".trae/documents/*.md",
+      "C:\\Users\\mepep\\OneDrive\\Desktop\\Zbeasts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A task has been marked as complete in a spec document. Please:\n1. Analyze the edited spec document to identify which task was just completed (look for checkmarks, completion markers, or status changes)\n2. Identify the next task in the sequence that needs to be started\n3. Automatically begin working on that next task by reading its requirements and starting implementation\n4. If all tasks in this spec are complete, check if there are other spec documents with pending tasks and move to those"
+  }
+}

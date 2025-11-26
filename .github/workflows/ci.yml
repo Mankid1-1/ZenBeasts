@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Solana CLI
+        shell: bash
+        run: |
+          curl -sSfL https://release.solana.com/v1.17.17/install | sh
+          echo "::add-path::/home/runner/.local/share/solana/install/releases/1.17.17/solana-release/bin"
+          solana --version
+
+      - name: Install Anchor CLI
+        run: npm i -g @coral-xyz/anchor-cli
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Anchor build
+        run: anchor build
+
+      - name: Typecheck
+        run: npx tsc -p tsconfig.json --noEmit
+
+      - name: Run tests
+        env:
+          SOLANA_RPC_URL: https://api.devnet.solana.com
+          NEXT_PUBLIC_PROGRAM_ID: Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS
+          RUN_DEVNET_TX: "0"
+        run: npm test

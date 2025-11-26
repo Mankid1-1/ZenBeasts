@@ -1,0 +1,7 @@
+.next/
+frontend/.next/
+node_modules/
+target/
+**/target/
+**/.next/
+*.lock

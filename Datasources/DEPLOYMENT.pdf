@@ -1,0 +1,620 @@
+﻿# ZenBeasts Deployment Guide
+
+This document provides comprehensive instructions for deploying the ZenBeasts gaming network to Solana devnet and mainnet.
+
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Wallet Setup and Security](#wallet-setup-and-security)
+3. [Devnet Deployment](#devnet-deployment)
+4. [Mainnet Deployment](#mainnet-deployment)
+5. [Frontend Deployment](#frontend-deployment)
+6. [API Backend Deployment](#api-backend-deployment)
+7. [Backup and Recovery](#backup-and-recovery)
+8. [Monitoring and Maintenance](#monitoring-and-maintenance)
+
+## Prerequisites
+
+### Required Tools
+
+- **Solana CLI** (v1.16.0 or higher)
+  ```bash
+  sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+  ```
+
+- **Anchor CLI** (v0.29.0)
+  ```bash
+  cargo install --git https://github.com/coral-xyz/anchor --tag v0.29.0 anchor-cli
+  ```
+
+- **Node.js** (v18 or higher)
+- **Yarn** or **npm**
+
+### Required Accounts
+
+- Deployment wallet with sufficient SOL for:
+  - Program deployment (~5-10 SOL on devnet, 10-20 SOL on mainnet)
+  - Program initialization (~0.1 SOL)
+  - Treasury setup (~0.1 SOL)
+  
+- ZEN token mint authority wallet
+
+## Wallet Setup and Security
+
+### Creating Deployment Wallets
+
+**IMPORTANT: Never commit private keys to version control!**
+
+#### 1. Create Deployment Wallet
+
+```bash
+# Create a new keypair for deployment
+solana-keygen new --outfile ~/.config/solana/zenbeasts-deploy.json
+
+# Set as default wallet
+solana config set --keypair ~/.config/solana/zenbeasts-deploy.json
+```
+
+#### 2. Create Program Authority Wallet
+
+```bash
+# Create a separate keypair for program authority
+solana-keygen new --outfile ~/.config/solana/zenbeasts-authority.json
+```
+
+#### 3. Create Treasury Authority Wallet
+
+```bash
+# Create keypair for treasury operations
+solana-keygen new --outfile ~/.config/solana/zenbeasts-treasury.json
+```
+
+### Wallet Recovery Procedures
+
+**Requirement 23.1: Document wallet recovery procedures**
+
+#### Backup Your Keypairs
+
+1. **Secure Storage**: Store keypair files in multiple secure locations:
+   - Encrypted USB drive
+   - Password-protected cloud storage (encrypted)
+   - Hardware security module (HSM) for production
+
+2. **Seed Phrase Backup**: When creating wallets, save the seed phrase:
+   ```bash
+   solana-keygen new --outfile wallet.json --no-bip39-passphrase
+   # Save the displayed seed phrase securely
+   ```
+
+3. **Test Recovery**: Periodically test wallet recovery:
+   ```bash
+   # Recover from seed phrase
+   solana-keygen recover --outfile recovered-wallet.json
+   # Enter your seed phrase when prompted
+   ```
+
+#### Recovery Steps
+
+If you lose access to your deployment wallet:
+
+1. **From Seed Phrase**:
+   ```bash
+   solana-keygen recover --outfile ~/.config/solana/zenbeasts-deploy.json
+   # Enter your 12 or 24-word seed phrase
+   ```
+
+2. **From Backup File**:
+   ```bash
+   # Copy backup to correct location
+   cp /path/to/backup/zenbeasts-deploy.json ~/.config/solana/
+   
+   # Verify the public key matches
+   solana-keygen pubkey ~/.config/solana/zenbeasts-deploy.json
+   ```
+
+3. **Verify Recovery**:
+   ```bash
+   # Check wallet balance
+   solana balance
+   
+   # Verify you can sign transactions
+   solana transfer <recipient> 0.001 --allow-unfunded-recipient
+   ```
+
+### Security Best Practices
+
+1. **Never share private keys** or seed phrases
+2. **Use hardware wallets** for mainnet authority keys
+3. **Implement multi-sig** for program upgrades on mainnet
+4. **Rotate keys periodically** for non-critical operations
+5. **Monitor wallet activity** for unauthorized transactions
+6. **Use separate wallets** for different roles (deploy, authority, treasury)
+
+## Devnet Deployment
+
+### 1. Configure for Devnet
+
+```bash
+# Set Solana cluster to devnet
+solana config set --url https://api.devnet.solana.com
+
+# Verify configuration
+solana config get
+```
+
+### 2. Fund Deployment Wallet
+
+```bash
+# Airdrop SOL for deployment (devnet only)
+solana airdrop 5
+
+# Verify balance
+solana balance
+```
+
+### 3. Build the Program
+
+```bash
+# Build with optimizations
+anchor build
+
+# Verify build
+ls -lh target/deploy/zenbeasts.so
+```
+
+### 4. Deploy to Devnet
+
+```bash
+# Deploy the program
+anchor deploy --provider.cluster devnet
+
+# Note the program ID from output
+# Update Anchor.toml [programs.devnet] with the new program ID if changed
+```
+
+### 5. Initialize the Program
+
+```bash
+# Run initialization script
+npm run initialize
+
+# Or manually with custom parameters
+ts-node scripts/initialize.ts \
+  --zen-mint <ZEN_TOKEN_MINT> \
+  --activity-cooldown 3600 \
+  --breeding-cooldown 86400 \
+  --upgrade-base-cost 1000000000 \
+  --breeding-base-cost 5000000000 \
+  --reward-rate 100000 \
+  --burn-percentage 10
+```
+
+### 6. Verify Deployment
+
+```bash
+# Check program account
+solana program show <PROGRAM_ID>
+
+# Test with sample mint
+npm run mint-sample
+
+# Verify beast was created
+solana account <BEAST_PDA>
+```
+
+## Mainnet Deployment
+
+**WARNING: Mainnet deployment requires real SOL and cannot be undone. Test thoroughly on devnet first!**
+
+### Pre-Deployment Checklist
+
+- [ ] All tests passing on devnet
+- [ ] Security audit completed
+- [ ] Economic parameters validated
+- [ ] Backup procedures tested
+- [ ] Monitoring systems ready
+- [ ] Emergency procedures documented
+- [ ] Sufficient SOL in deployment wallet (20+ SOL recommended)
+
+### 1. Configure for Mainnet
+
+```bash
+# Set cluster to mainnet
+solana config set --url https://api.mainnet-beta.solana.com
+
+# Use mainnet deployment wallet
+solana config set --keypair ~/.config/solana/zenbeasts-deploy.json
+
+# Verify configuration
+solana config get
+```
+
+### 2. Update Anchor.toml
+
+```toml
+[provider]
+cluster = "mainnet"
+wallet = "~/.config/solana/zenbeasts-deploy.json"
+```
+
+### 3. Build for Production
+
+```bash
+# Clean previous builds
+anchor clean
+
+# Build with optimizations
+anchor build --verifiable
+
+# Verify the build
+anchor verify <PROGRAM_ID>
+```
+
+### 4. Deploy to Mainnet
+
+```bash
+# Deploy (this costs real SOL!)
+anchor deploy --provider.cluster mainnet
+
+# Save the program ID
+echo "PROGRAM_ID=<YOUR_PROGRAM_ID>" >> .env
+```
+
+### 5. Initialize on Mainnet
+
+```bash
+# Initialize with production parameters
+npm run initialize -- --cluster mainnet
+
+# Verify initialization
+solana account <CONFIG_PDA>
+```
+
+### 6. Transfer Authority
+
+For production security, transfer program authority to a multi-sig or hardware wallet:
+
+```bash
+# Transfer program upgrade authority
+solana program set-upgrade-authority <PROGRAM_ID> \
+  --new-upgrade-authority <MULTISIG_ADDRESS>
+```
+
+## Frontend Deployment
+
+### Environment Configuration
+
+**Requirement 23.3: Configure frontend with multiple RPC endpoints**
+
+Create `frontend/.env.production`:
+
+```bash
+# Network Configuration
+NEXT_PUBLIC_SOLANA_NETWORK=mainnet-beta
+NEXT_PUBLIC_RPC_URL=https://api.mainnet-beta.solana.com
+NEXT_PUBLIC_RPC_URL_BACKUP=https://rpc.ankr.com/solana
+NEXT_PUBLIC_RPC_URL_TERTIARY=https://mainnet.helius-rpc.com
+
+# Program Configuration
+NEXT_PUBLIC_PROGRAM_ID=<YOUR_MAINNET_PROGRAM_ID>
+NEXT_PUBLIC_ZEN_MINT=<YOUR_ZEN_TOKEN_MINT>
+
+# API Configuration
+NEXT_PUBLIC_API_URL=https://api.zenbeasts.io
+
+# Optional: Helius API key for enhanced RPC
+NEXT_PUBLIC_HELIUS_API_KEY=<YOUR_HELIUS_KEY>
+```
+
+### Build and Deploy
+
+#### Option 1: Vercel (Recommended)
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy to Vercel
+cd frontend
+vercel --prod
+
+# Configure environment variables in Vercel dashboard
+```
+
+#### Option 2: Netlify
+
+```bash
+# Install Netlify CLI
+npm install -g netlify-cli
+
+# Build the application
+cd frontend
+npm run build
+
+# Deploy to Netlify
+netlify deploy --prod --dir=.next
+```
+
+#### Option 3: Self-Hosted
+
+```bash
+# Build the application
+cd frontend
+npm run build
+
+# Start production server
+npm start
+
+# Or use PM2 for process management
+pm2 start npm --name "zenbeasts-frontend" -- start
+```
+
+### Mobile Optimization
+
+**Requirement 21.1, 21.2, 21.3: Mobile support and responsiveness**
+
+Verify mobile functionality:
+
+1. Test on multiple devices (iOS, Android)
+2. Verify wallet deep linking works
+3. Test touch interactions
+4. Verify responsive layouts
+5. Test accessibility features
+
+## API Backend Deployment
+
+### Environment Configuration
+
+Create `api/.env.production`:
+
+```bash
+# Server Configuration
+PORT=3001
+NODE_ENV=production
+
+# CORS Configuration
+ALLOWED_ORIGINS=https://zenbeasts.io,https://www.zenbeasts.io
+
+# Solana Configuration
+SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+PROGRAM_ID=<YOUR_MAINNET_PROGRAM_ID>
+
+# Caching Configuration
+REDIS_URL=redis://localhost:6379
+CACHE_TTL=300
+
+# Metadata Storage
+ARWEAVE_WALLET_PATH=/path/to/arweave-wallet.json
+IPFS_API_URL=https://ipfs.infura.io:5001
+```
+
+### Deploy API
+
+#### Option 1: Docker
+
+```bash
+# Build Docker image
+docker build -t zenbeasts-api ./api
+
+# Run container
+docker run -d \
+  --name zenbeasts-api \
+  -p 3001:3001 \
+  --env-file api/.env.production \
+  zenbeasts-api
+```
+
+#### Option 2: PM2
+
+```bash
+# Install dependencies
+cd api
+npm install --production
+
+# Start with PM2
+pm2 start src/index.js --name "zenbeasts-api"
+
+# Save PM2 configuration
+pm2 save
+pm2 startup
+```
+
+## Backup and Recovery
+
+**Requirement 23.2, 23.3, 23.4: Backup and recovery mechanisms**
+
+### Program Account Backups
+
+```bash
+# Backup program account data
+solana account <PROGRAM_ID> --output json > backups/program-$(date +%Y%m%d).json
+
+# Backup config PDA
+solana account <CONFIG_PDA> --output json > backups/config-$(date +%Y%m%d).json
+
+# Backup treasury account
+solana account <TREASURY_ACCOUNT> --output json > backups/treasury-$(date +%Y%m%d).json
+```
+
+### Automated Backup Script
+
+Create `scripts/backup.sh`:
+
+```bash
+#!/bin/bash
+
+BACKUP_DIR="./backups/$(date +%Y%m%d)"
+mkdir -p $BACKUP_DIR
+
+# Backup program
+solana account $PROGRAM_ID --output json > $BACKUP_DIR/program.json
+
+# Backup config
+solana account $CONFIG_PDA --output json > $BACKUP_DIR/config.json
+
+# Backup treasury
+solana account $TREASURY --output json > $BACKUP_DIR/treasury.json
+
+# Compress backups
+tar -czf $BACKUP_DIR.tar.gz $BACKUP_DIR
+
+# Upload to secure storage (example: AWS S3)
+aws s3 cp $BACKUP_DIR.tar.gz s3://zenbeasts-backups/
+
+echo "Backup completed: $BACKUP_DIR.tar.gz"
+```
+
+### Recovery Procedures
+
+#### Program Upgrade Recovery
+
+If a program upgrade fails:
+
+```bash
+# Rollback to previous version
+solana program deploy target/deploy/zenbeasts-previous.so \
+  --program-id <PROGRAM_ID> \
+  --upgrade-authority ~/.config/solana/zenbeasts-authority.json
+```
+
+#### Data Recovery
+
+If account data is corrupted:
+
+```bash
+# Restore from backup
+solana program write-buffer backups/program-backup.so
+solana program set-buffer-authority <BUFFER> --new-buffer-authority <AUTHORITY>
+solana program deploy --program-id <PROGRAM_ID> --buffer <BUFFER>
+```
+
+### Disaster Recovery Plan
+
+1. **Immediate Response**:
+   - Stop all frontend deployments
+   - Disable API endpoints
+   - Notify users via status page
+
+2. **Assessment**:
+   - Identify the issue (program bug, account corruption, etc.)
+   - Determine scope of impact
+   - Review recent backups
+
+3. **Recovery**:
+   - Deploy fix or rollback to stable version
+   - Restore corrupted accounts from backups
+   - Verify system integrity
+
+4. **Verification**:
+   - Run comprehensive tests
+   - Verify all accounts are accessible
+   - Check treasury balance
+
+5. **Resume Operations**:
+   - Re-enable frontend
+   - Re-enable API
+   - Monitor closely for 24-48 hours
+
+## Monitoring and Maintenance
+
+### Health Checks
+
+Set up monitoring for:
+
+1. **Program Health**:
+   ```bash
+   # Check program is deployed
+   solana program show <PROGRAM_ID>
+   ```
+
+2. **Treasury Balance**:
+   ```bash
+   # Monitor treasury balance
+   solana balance <TREASURY_ACCOUNT>
+   ```
+
+3. **RPC Endpoint Health**:
+   ```bash
+   # Test primary endpoint
+   curl -X POST https://api.mainnet-beta.solana.com \
+     -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+   ```
+
+### Monitoring Script
+
+Create `scripts/monitor.sh`:
+
+```bash
+#!/bin/bash
+
+# Check program
+if solana program show $PROGRAM_ID > /dev/null 2>&1; then
+  echo "âœ“ Program is deployed"
+else
+  echo "âœ— Program check failed"
+  # Send alert
+fi
+
+# Check treasury balance
+BALANCE=$(solana balance $TREASURY --lamports)
+if [ $BALANCE -lt 1000000000 ]; then
+  echo "âš  Treasury balance low: $BALANCE lamports"
+  # Send alert
+fi
+
+# Check RPC endpoints
+for endpoint in $PRIMARY_RPC $BACKUP_RPC $TERTIARY_RPC; do
+  if curl -s -X POST $endpoint -H "Content-Type: application/json" \
+    -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' | grep -q "ok"; then
+    echo "âœ“ RPC endpoint healthy: $endpoint"
+  else
+    echo "âœ— RPC endpoint down: $endpoint"
+    # Send alert
+  fi
+done
+```
+
+### Maintenance Tasks
+
+#### Weekly
+
+- Review treasury balance
+- Check for program upgrade needs
+- Review error logs
+- Verify backup integrity
+
+#### Monthly
+
+- Security audit
+- Performance optimization review
+- Update dependencies
+- Test disaster recovery procedures
+
+#### Quarterly
+
+- Comprehensive security audit
+- Economic parameter review
+- User feedback analysis
+- Infrastructure scaling assessment
+
+## Emergency Contacts
+
+- **Program Authority**: [Contact Info]
+- **Treasury Manager**: [Contact Info]
+- **DevOps Lead**: [Contact Info]
+- **Security Team**: [Contact Info]
+
+## Additional Resources
+
+- [Solana Documentation](https://docs.solana.com/)
+- [Anchor Documentation](https://www.anchor-lang.com/)
+- [Metaplex Documentation](https://docs.metaplex.com/)
+- [ZenBeasts Technical Documentation](./TECHNICAL.md)
+
+## Changelog
+
+- **2024-01-XX**: Initial deployment guide created
+- **2024-XX-XX**: Added mainnet deployment procedures
+- **2024-XX-XX**: Enhanced backup and recovery procedures
+

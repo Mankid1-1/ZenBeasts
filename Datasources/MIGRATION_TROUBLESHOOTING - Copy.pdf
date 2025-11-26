@@ -1,0 +1,1091 @@
+﻿# ZenBeasts Migration & Troubleshooting Guide
+
+**Version:** 2.0  
+**Last Updated:** 2024
+
+---
+
+## Table of Contents
+
+1. [Migration Strategies](#1-migration-strategies)
+2. [Version Upgrades](#2-version-upgrades)
+3. [Data Migration](#3-data-migration)
+4. [Common Issues](#4-common-issues)
+5. [Error Resolution](#5-error-resolution)
+6. [Performance Optimization](#6-performance-optimization)
+7. [Emergency Procedures](#7-emergency-procedures)
+8. [FAQ](#8-faq)
+
+---
+
+## 1. Migration Strategies
+
+### 1.1 Zero-Downtime Migration (Standard NFTs â†’ Compressed NFTs)
+
+**Timeline:** 90-day migration window
+
+**Overview:**
+```
+Day 0-30: Parallel Operation
+â”œâ”€â”€ Both v1.0 (standard) and v2.0 (cNFT) programs live
+â”œâ”€â”€ Users can choose which version to use
+â””â”€â”€ No forced migration
+
+Day 30-60: Migration Incentives
+â”œâ”€â”€ Offer ZEN token bonuses for migrating
+â”œâ”€â”€ Enable migration tool in frontend
+â””â”€â”€ Communicate benefits (lower costs, new features)
+
+Day 60-90: Sunset Warning
+â”œâ”€â”€ Announce v1.0 deprecation timeline
+â”œâ”€â”€ Final migration push with 2x bonuses
+â””â”€â”€ Set read-only mode for v1.0
+
+Day 90+: Full Migration
+â”œâ”€â”€ v1.0 program set to read-only
+â”œâ”€â”€ All new mints use v2.0
+â””â”€â”€ Legacy beasts still queryable
+```
+
+### 1.2 Migration Tool Implementation
+
+**Backend Migration Service:**
+
+```typescript
+// migration/migrator.ts
+import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
+import { Program } from '@coral-xyz/anchor';
+
+export class BeastMigrator {
+  constructor(
+    private connection: Connection,
+    private v1Program: Program,
+    private v2Program: Program
+  ) {}
+
+  async migrateBeast(
+    userWallet: Keypair,
+    v1Mint: PublicKey
+  ): Promise<{ v2Mint: PublicKey; signature: string }> {
+    console.log('Starting migration for', v1Mint.toString());
+
+    // 1. Fetch v1 beast data
+    const [v1BeastPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from('beast'), v1Mint.toBuffer()],
+      this.v1Program.programId
+    );
+
+    const v1Beast = await this.v1Program.account.beastAccount.fetch(v1BeastPDA);
+
+    // 2. Burn v1 NFT (or lock it)
+    await this.burnV1NFT(userWallet, v1Mint);
+
+    // 3. Mint v2 compressed NFT with same traits
+    const v2Mint = await this.mintV2NFT(
+      userWallet,
+      v1Beast.traits,
+      v1Beast.rarityScore,
+      v1Beast.activityCount
+    );
+
+    // 4. Record migration in database
+    await this.recordMigration(v1Mint, v2Mint);
+
+    // 5. Award migration bonus (10% ZEN)
+    await this.awardMigrationBonus(userWallet.publicKey);
+
+    return { v2Mint, signature: 'tx_signature' };
+  }
+
+  private async burnV1NFT(owner: Keypair, mint: PublicKey): Promise<void> {
+    // Implementation: Burn or lock the v1 NFT
+    console.log('Burning v1 NFT...');
+    // ... burn instruction
+  }
+
+  private async mintV2NFT(
+    owner: Keypair,
+    traits: number[],
+    rarity: number,
+    activityCount: number
+  ): Promise<PublicKey> {
+    // Implementation: Mint compressed NFT with preserved data
+    console.log('Minting v2 cNFT...');
+    // ... compressed mint instruction
+    return Keypair.generate().publicKey;
+  }
+
+  private async recordMigration(v1: PublicKey, v2: PublicKey): Promise<void> {
+    // Store migration mapping in database
+    console.log(`Migration: ${v1.toString()} â†’ ${v2.toString()}`);
+  }
+
+  private async awardMigrationBonus(user: PublicKey): Promise<void> {
+    // Transfer bonus ZEN tokens
+    console.log('Awarding migration bonus...');
+  }
+}
+```
+
+**Frontend Migration UI:**
+
+```typescript
+// components/migration/MigrationPanel.tsx
+'use client';
+
+import { useState } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
+
+export function MigrationPanel({ v1Beasts }: { v1Beasts: string[] }) {
+  const { publicKey } = useWallet();
+  const [migrating, setMigrating] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const handleMigrate = async () => {
+    if (!publicKey) return;
+
+    setMigrating(true);
+    const total = v1Beasts.length;
+
+    for (let i = 0; i < v1Beasts.length; i++) {
+      const mint = new PublicKey(v1Beasts[i]);
+      
+      try {
+        // Call migration endpoint
+        const response = await fetch('/api/migrate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: publicKey.toString(),
+            v1Mint: mint.toString(),
+          }),
+        });
+
+        const { v2Mint } = await response.json();
+        console.log(`Migrated: ${v1Beasts[i]} â†’ ${v2Mint}`);
+
+        setProgress(((i + 1) / total) * 100);
+      } catch (err) {
+        console.error(`Failed to migrate ${v1Beasts[i]}:`, err);
+      }
+    }
+
+    setMigrating(false);
+  };
+
+  return (
+    <div className="bg-gray-800 p-6 rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">Migrate to V2</h2>
+      
+      <div className="mb-4">
+        <p className="text-gray-300 mb-2">
+          You have {v1Beasts.length} beasts eligible for migration.
+        </p>
+        <p className="text-sm text-gray-400">
+          Benefits: 90% lower costs, new features, + 10% ZEN bonus
+        </p>
+      </div>
+
+      {migrating && (
+        <div className="mb-4">
+          <div className="w-full bg-gray-700 rounded-full h-4">
+            <div
+              className="bg-purple-600 h-4 rounded-full transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-center text-sm mt-2">{progress.toFixed(0)}% Complete</p>
+        </div>
+      )}
+
+      <button
+        onClick={handleMigrate}
+        disabled={migrating}
+        className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white py-3 rounded-lg font-bold"
+      >
+        {migrating ? 'Migrating...' : 'Migrate All Beasts'}
+      </button>
+    </div>
+  );
+}
+```
+
+### 1.3 Database Migration Script
+
+```sql
+-- migrations/001_add_migration_tracking.sql
+
+CREATE TABLE IF NOT EXISTS beast_migrations (
+  id SERIAL PRIMARY KEY,
+  v1_mint VARCHAR(44) NOT NULL UNIQUE,
+  v2_mint VARCHAR(44) NOT NULL UNIQUE,
+  owner VARCHAR(44) NOT NULL,
+  migrated_at TIMESTAMP DEFAULT NOW(),
+  bonus_awarded BOOLEAN DEFAULT FALSE
+);
+
+CREATE INDEX idx_migrations_owner ON beast_migrations(owner);
+CREATE INDEX idx_migrations_v1_mint ON beast_migrations(v1_mint);
+CREATE INDEX idx_migrations_v2_mint ON beast_migrations(v2_mint);
+
+-- Track migration statistics
+CREATE TABLE IF NOT EXISTS migration_stats (
+  date DATE PRIMARY KEY,
+  total_migrated INTEGER DEFAULT 0,
+  bonuses_awarded INTEGER DEFAULT 0,
+  failed_attempts INTEGER DEFAULT 0
+);
+```
+
+---
+
+## 2. Version Upgrades
+
+### 2.1 Program Upgrade Checklist
+
+**Pre-Upgrade:**
+- [ ] Run full test suite on new version
+- [ ] Perform security audit (internal + external)
+- [ ] Test on devnet for 1+ week
+- [ ] Backup all program data
+- [ ] Notify community 7 days in advance
+- [ ] Prepare rollback plan
+
+**Upgrade Process:**
+
+```bash
+# 1. Build new version with optimizations
+anchor build --verifiable
+
+# 2. Verify program authority
+solana program show <PROGRAM_ID>
+
+# 3. Create upgrade buffer
+solana program write-buffer target/deploy/zenbeasts.so
+
+# 4. Verify buffer
+solana program show <BUFFER_ADDRESS>
+
+# 5. Execute upgrade (requires upgrade authority)
+solana program deploy --program-id <PROGRAM_ID> \
+  --buffer <BUFFER_ADDRESS> \
+  --upgrade-authority ~/.config/solana/upgrade-authority.json
+
+# 6. Verify new version deployed
+solana program show <PROGRAM_ID>
+
+# 7. Test basic operations
+ts-node scripts/test-upgrade.ts
+```
+
+**Post-Upgrade:**
+- [ ] Test all instructions (mint, activity, upgrade)
+- [ ] Monitor error rates for 24 hours
+- [ ] Check compute unit usage
+- [ ] Verify event emissions
+- [ ] Update frontend SDK if needed
+- [ ] Communicate completion to community
+
+### 2.2 State Migration (Account Structure Changes)
+
+**Example: Adding new field to BeastAccount**
+
+```rust
+// Old structure (v1.0)
+#[account]
+pub struct BeastAccount {
+    pub mint: Pubkey,
+    pub owner: Pubkey,
+    pub traits: [u8; 10],
+    pub rarity_score: u64,
+    pub last_activity: i64,
+}
+
+// New structure (v1.1)
+#[account]
+pub struct BeastAccount {
+    pub mint: Pubkey,
+    pub owner: Pubkey,
+    pub traits: [u8; 10],
+    pub rarity_score: u64,
+    pub last_activity: i64,
+    pub activity_count: u32,    // NEW FIELD
+    pub pending_rewards: u64,    // NEW FIELD
+}
+```
+
+**Migration instruction:**
+
+```rust
+pub fn migrate_beast_v1_to_v1_1(ctx: Context<MigrateBeast>) -> Result<()> {
+    let old_beast = &ctx.accounts.old_beast_account;
+    let new_beast = &mut ctx.accounts.new_beast_account;
+
+    // Copy existing fields
+    new_beast.mint = old_beast.mint;
+    new_beast.owner = old_beast.owner;
+    new_beast.traits = old_beast.traits;
+    new_beast.rarity_score = old_beast.rarity_score;
+    new_beast.last_activity = old_beast.last_activity;
+
+    // Initialize new fields with defaults
+    new_beast.activity_count = 0;
+    new_beast.pending_rewards = 0;
+
+    msg!("Beast migrated: {}", new_beast.mint);
+    Ok(())
+}
+```
+
+---
+
+## 3. Data Migration
+
+### 3.1 Exporting Beast Data
+
+**Export Script:**
+
+```typescript
+// scripts/export-beasts.ts
+import * as fs from 'fs';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { Program, AnchorProvider } from '@coral-xyz/anchor';
+
+async function exportAllBeasts() {
+  const connection = new Connection('https://api.devnet.solana.com');
+  const program = getProgram(connection);
+
+  console.log('Fetching all beast accounts...');
+
+  const beasts = await program.account.beastAccount.all();
+
+  const exportData = beasts.map((beast) => ({
+    mint: beast.account.mint.toString(),
+    owner: beast.account.owner.toString(),
+    traits: Array.from(beast.account.traits),
+    rarityScore: beast.account.rarityScore.toNumber(),
+    lastActivity: beast.account.lastActivity.toNumber(),
+    activityCount: beast.account.activityCount,
+    pendingRewards: beast.account.pendingRewards.toNumber(),
+  }));
+
+  fs.writeFileSync(
+    'beast-export.json',
+    JSON.stringify(exportData, null, 2)
+  );
+
+  console.log(`Exported ${exportData.length} beasts to beast-export.json`);
+}
+
+exportAllBeasts().catch(console.error);
+```
+
+### 3.2 Importing to New System
+
+```typescript
+// scripts/import-beasts.ts
+import * as fs from 'fs';
+import { Connection, PublicKey } from '@solana/web3.js';
+
+async function importBeasts() {
+  const data = JSON.parse(fs.readFileSync('beast-export.json', 'utf-8'));
+
+  console.log(`Importing ${data.length} beasts...`);
+
+  for (const beast of data) {
+    try {
+      // Recreate beast in new system
+      await createBeastFromExport(beast);
+      console.log(`âœ“ Imported ${beast.mint}`);
+    } catch (err) {
+      console.error(`âœ— Failed to import ${beast.mint}:`, err);
+    }
+  }
+}
+
+async function createBeastFromExport(beastData: any) {
+  // Implementation depends on new system architecture
+  // Could use special admin instruction or batch operation
+}
+
+importBeasts().catch(console.error);
+```
+
+---
+
+## 4. Common Issues
+
+### 4.1 Build & Compilation Errors
+
+**Issue:** `anchor build` fails with "package not found"
+
+**Solution:**
+```bash
+# Clear Anchor cache
+rm -rf target/
+rm -rf .anchor/
+
+# Update dependencies
+cargo update
+
+# Rebuild
+anchor build
+```
+
+---
+
+**Issue:** Rust version mismatch
+
+**Solution:**
+```bash
+# Update Rust toolchain
+rustup update stable
+rustup default stable
+
+# Verify version (should be 1.70+)
+rustc --version
+
+# Rebuild
+cargo clean && anchor build
+```
+
+---
+
+**Issue:** "overflow evaluating" error during build
+
+**Solution:**
+```toml
+# In program's Cargo.toml, ensure:
+[dependencies]
+anchor-lang = { version = "0.29.0", features = ["init-if-needed"] }
+anchor-spl = "0.29.0"
+
+# Not mixed versions like 0.27 and 0.29
+```
+
+---
+
+### 4.2 Deployment Issues
+
+**Issue:** "Insufficient funds for transaction"
+
+**Solution:**
+```bash
+# Check balance
+solana balance
+
+# Request airdrop (devnet only)
+solana airdrop 2
+
+# Or fund from another wallet
+solana transfer <YOUR_ADDRESS> 5 --from /path/to/funded-wallet.json
+```
+
+---
+
+**Issue:** "Program upgrade authority mismatch"
+
+**Solution:**
+```bash
+# Check current authority
+solana program show <PROGRAM_ID>
+
+# If needed, transfer authority
+solana program set-upgrade-authority <PROGRAM_ID> \
+  --new-upgrade-authority <NEW_AUTHORITY_PUBKEY>
+```
+
+---
+
+**Issue:** Deploy succeeds but program not working
+
+**Solution:**
+```bash
+# Verify program ID in multiple places:
+# 1. declare_id!() in lib.rs
+# 2. Anchor.toml [programs.devnet]
+# 3. Frontend .env NEXT_PUBLIC_PROGRAM_ID
+
+# Regenerate types
+anchor build
+npm run generate-types
+
+# Redeploy frontend
+npm run build
+```
+
+---
+
+### 4.3 Transaction Failures
+
+**Issue:** "Transaction simulation failed: Blockhash not found"
+
+**Solution:**
+```typescript
+// Use recent blockhash and increase timeout
+const latestBlockhash = await connection.getLatestBlockhash('finalized');
+
+const signature = await connection.sendTransaction(transaction, signers, {
+  skipPreflight: false,
+  preflightCommitment: 'finalized',
+  maxRetries: 3,
+});
+
+await connection.confirmTransaction({
+  signature,
+  blockhash: latestBlockhash.blockhash,
+  lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+}, 'finalized');
+```
+
+---
+
+**Issue:** "CooldownActive" error even after waiting
+
+**Solution:**
+```typescript
+// Check server time vs blockchain time
+const clockAccount = await connection.getAccountInfo(SYSVAR_CLOCK_PUBKEY);
+const clock = borsh.deserialize(ClockLayout, clockAccount.data);
+console.log('Blockchain time:', clock.unixTimestamp);
+console.log('Local time:', Math.floor(Date.now() / 1000));
+
+// May need to account for clock drift
+const timeBuffer = 5; // seconds
+const canPerform = (currentTime - lastActivity) >= (cooldown + timeBuffer);
+```
+
+---
+
+**Issue:** "Compute budget exceeded"
+
+**Solution:**
+```rust
+// In Rust program, add compute budget request
+use anchor_lang::solana_program::compute_budget::ComputeBudgetInstruction;
+
+// Before your instruction
+let compute_ix = ComputeBudgetInstruction::set_compute_unit_limit(400_000);
+
+// Or optimize instruction logic:
+// - Reduce iterations
+// - Use smaller data structures
+// - Batch operations
+// - Use zero_copy for large accounts
+```
+
+```typescript
+// In TypeScript client
+import { ComputeBudgetProgram } from '@solana/web3.js';
+
+const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+  units: 400000,
+});
+
+const transaction = new Transaction()
+  .add(modifyComputeUnits)
+  .add(yourInstruction);
+```
+
+---
+
+### 4.4 Frontend Issues
+
+**Issue:** Wallet not connecting
+
+**Solution:**
+```typescript
+// Ensure proper provider setup
+import { WalletProvider } from '@solana/wallet-adapter-react';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
+
+// Check wallet is installed
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const phantom = window.solana;
+    if (!phantom?.isPhantom) {
+      alert('Please install Phantom wallet');
+    }
+  }
+}, []);
+
+// Try manual connection
+const handleConnect = async () => {
+  try {
+    await wallet.connect();
+  } catch (err) {
+    console.error('Connection failed:', err);
+    // Fallback to manual wallet selection
+  }
+};
+```
+
+---
+
+**Issue:** "Cannot read properties of undefined (reading 'toBase58')"
+
+**Solution:**
+```typescript
+// Always check for null/undefined
+const { publicKey } = useWallet();
+
+// âŒ Bad
+const address = publicKey.toBase58();
+
+// âœ… Good
+const address = publicKey?.toBase58() ?? 'Not connected';
+
+// Or use optional chaining with default
+const handleMint = async () => {
+  if (!publicKey) {
+    alert('Please connect wallet first');
+    return;
+  }
+  
+  // Now safe to use publicKey
+  await mintBeast(publicKey);
+};
+```
+
+---
+
+**Issue:** Beast data not updating after transaction
+
+**Solution:**
+```typescript
+// Force refetch after transaction
+const { beast, refetch } = useBeast(mintAddress);
+
+const handleActivity = async () => {
+  await performActivity(mintAddress, ActivityType.Meditation);
+  
+  // Wait for transaction confirmation
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  // Refetch data
+  await refetch();
+};
+
+// Or use WebSocket subscription for real-time updates
+useEffect(() => {
+  if (!beastPDA) return;
+
+  const subscriptionId = connection.onAccountChange(
+    beastPDA,
+    (accountInfo) => {
+      const updatedBeast = program.account.beastAccount.coder.accounts.decode(
+        'BeastAccount',
+        accountInfo.data
+      );
+      setBeast(updatedBeast);
+    },
+    'confirmed'
+  );
+
+  return () => {
+    connection.removeAccountChangeListener(subscriptionId);
+  };
+}, [beastPDA]);
+```
+
+---
+
+## 5. Error Resolution
+
+### 5.1 Program Error Codes
+
+**Error 6000: CooldownActive**
+```
+Cause: Activity attempted before cooldown expired
+Fix: Wait for cooldown period to pass
+Code Example:
+  const timeRemaining = cooldown - (Date.now()/1000 - lastActivity);
+  console.log(`Wait ${timeRemaining} seconds`);
+```
+
+**Error 6001: NotOwner**
+```
+Cause: User doesn't own the beast they're trying to modify
+Fix: Verify ownership before operations
+Code Example:
+  if (beast.owner !== wallet.publicKey.toString()) {
+    throw new Error('You do not own this beast');
+  }
+```
+
+**Error 6008: InsufficientFunds**
+```
+Cause: Not enough ZEN tokens for upgrade
+Fix: Check balance before transaction
+Code Example:
+  const balance = await getTokenBalance(wallet, zenMint);
+  if (balance < requiredAmount) {
+    alert(`Need ${requiredAmount - balance} more ZEN`);
+  }
+```
+
+### 5.2 Solana RPC Errors
+
+**429: Rate Limit Exceeded**
+```typescript
+// Solution 1: Use premium RPC (Helius, QuickNode)
+const connection = new Connection(
+  'https://mainnet.helius-rpc.com/?api-key=YOUR_KEY'
+);
+
+// Solution 2: Implement retry logic with exponential backoff
+async function fetchWithRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3
+): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      if (err.message?.includes('429') && i < maxRetries - 1) {
+        const delay = Math.pow(2, i) * 1000;
+        console.log(`Rate limited, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+```
+
+**503: Service Unavailable**
+```typescript
+// Use multiple RPC endpoints with fallback
+const RPC_ENDPOINTS = [
+  'https://api.mainnet-beta.solana.com',
+  'https://solana-api.projectserum.com',
+  'https://rpc.ankr.com/solana',
+];
+
+async function getConnectionWithFallback(): Promise<Connection> {
+  for (const endpoint of RPC_ENDPOINTS) {
+    try {
+      const connection = new Connection(endpoint);
+      await connection.getVersion(); // Test connection
+      return connection;
+    } catch (err) {
+      console.warn(`Endpoint ${endpoint} failed, trying next...`);
+    }
+  }
+  throw new Error('All RPC endpoints unavailable');
+}
+```
+
+---
+
+## 6. Performance Optimization
+
+### 6.1 Reducing Transaction Costs
+
+**Batch Operations:**
+```rust
+// Instead of separate transactions per trait upgrade
+// Create batch upgrade instruction
+
+pub fn batch_upgrade_traits(
+    ctx: Context<BatchUpgrade>,
+    upgrades: Vec<TraitUpgrade>, // Up to 5 traits at once
+) -> Result<()> {
+    let beast = &mut ctx.accounts.beast_account;
+    
+    for upgrade in upgrades {
+        require!(upgrade.trait_index < 10, ZenBeastsError::InvalidTraitIndex);
+        beast.traits[upgrade.trait_index as usize] = upgrade.new_value;
+    }
+    
+    beast.rarity_score = calculate_rarity(&beast.traits)?;
+    
+    Ok(())
+}
+```
+
+**Use Versioned Transactions (Phase 3):**
+```typescript
+import { TransactionMessage, VersionedTransaction } from '@solana/web3.js';
+
+const message = new TransactionMessage({
+  payerKey: publicKey,
+  recentBlockhash: latestBlockhash.blockhash,
+  instructions: [instruction1, instruction2, instruction3], // More instructions
+}).compileToV0Message();
+
+const transaction = new VersionedTransaction(message);
+```
+
+### 6.2 Caching Strategies
+
+**Redis Caching Layer:**
+```typescript
+// backend/cache.ts
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL);
+
+export async function getCachedBeast(mint: string) {
+  const cached = await redis.get(`beast:${mint}`);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  // Fetch from blockchain
+  const beast = await fetchBeastFromChain(mint);
+  
+  // Cache for 60 seconds
+  await redis.setex(`beast:${mint}`, 60, JSON.stringify(beast));
+  
+  return beast;
+}
+
+export async function invalidateBeastCache(mint: string) {
+  await redis.del(`beast:${mint}`);
+}
+```
+
+**Frontend Query Caching:**
+```typescript
+import { useQuery } from '@tanstack/react-query';
+
+export function useBeastCached(mintAddress: string) {
+  return useQuery({
+    queryKey: ['beast', mintAddress],
+    queryFn: () => fetchBeast(mintAddress),
+    staleTime: 30000, // Consider fresh for 30 seconds
+    cacheTime: 300000, // Keep in cache for 5 minutes
+    refetchOnWindowFocus: false,
+  });
+}
+```
+
+### 6.3 Compute Unit Optimization
+
+**Measure Compute Units:**
+```bash
+# In test, enable logging
+RUST_LOG=solana_runtime::message_processor=debug anchor test
+
+# Look for: "Program consumed: XXXXX of YYYYY compute units"
+```
+
+**Optimization Techniques:**
+```rust
+// 1. Use zero_copy for large accounts
+#[account(zero_copy)]
+pub struct LargeBeastData {
+    pub extended_traits: [u8; 100],
+    pub history: [ActivityRecord; 50],
+}
+
+// 2. Lazy evaluation
+pub fn calculate_rarity_lazy(traits: &[u8; 10], index: usize) -> u64 {
+    // Only calculate for requested trait
+    RARITY_WEIGHTS[index][traits[index] as usize] as u64
+}
+
+// 3. Precomputed lookup tables
+pub const RARITY_LOOKUP: [[u64; 5]; 10] = /* precomputed values */;
+
+pub fn get_rarity_fast(traits: &[u8; 10]) -> u64 {
+    traits.iter().enumerate()
+        .map(|(i, &t)| RARITY_LOOKUP[i][t as usize])
+        .sum()
+}
+```
+
+---
+
+## 7. Emergency Procedures
+
+### 7.1 Emergency Pause
+
+**Implement Pause Mechanism:**
+```rust
+#[account]
+pub struct ProgramConfig {
+    pub authority: Pubkey,
+    pub paused: bool, // Emergency pause flag
+    // ... other fields
+}
+
+// Add to all critical instructions
+pub fn create_beast(ctx: Context<CreateBeast>, ...) -> Result<()> {
+    require!(!ctx.accounts.config.paused, ZenBeastsError::EmergencyPauseActive);
+    
+    // ... rest of instruction
+}
+
+// Admin-only instruction to toggle pause
+pub fn set_pause_state(
+    ctx: Context<AdminControl>,
+    paused: bool,
+) -> Result<()> {
+    require!(
+        ctx.accounts.authority.key() == ctx.accounts.config.authority,
+        ZenBeastsError::UnauthorizedAuthority
+    );
+    
+    ctx.accounts.config.paused = paused;
+    
+    msg!("Program pause state set to: {}", paused);
+    Ok(())
+}
+```
+
+**Activate Emergency Pause:**
+```bash
+# CLI command
+ts-node scripts/emergency-pause.ts --enable
+
+# Or via admin dashboard
+curl -X POST https://admin.zenbeasts.io/emergency/pause \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"paused": true, "reason": "Critical bug discovered"}'
+```
+
+### 7.2 Rollback Procedure
+
+**Quick Rollback:**
+```bash
+# 1. Identify last known good version
+solana program dump <PROGRAM_ID> previous-version.so
+
+# 2. Redeploy previous version
+solana program deploy --program-id <PROGRAM_ID> previous-version.so
+
+# 3. Verify rollback
+solana program show <PROGRAM_ID>
+
+# 4. Test critical operations
+ts-node scripts/smoke-test.ts
+```
+
+### 7.3 Data Recovery
+
+**Backup Strategy:**
+```bash
+# Automated daily backups
+#!/bin/bash
+# backup.sh
+
+DATE=$(date +%Y%m%d)
+BACKUP_DIR="backups/$DATE"
+mkdir -p $BACKUP_DIR
+
+# Export all beast accounts
+ts-node scripts/export-beasts.ts > "$BACKUP_DIR/beasts.json"
+
+# Export program config
+ts-node scripts/export-config.ts > "$BACKUP_DIR/config.json"
+
+# Upload to S3 or similar
+aws s3 cp "$BACKUP_DIR" s3://zenbeasts-backups/$DATE/ --recursive
+
+echo "Backup completed: $DATE"
+```
+
+**Recovery Process:**
+```bash
+# 1. Download latest backup
+aws s3 cp s3://zenbeasts-backups/latest/ ./recovery/ --recursive
+
+# 2. Verify data integrity
+ts-node scripts/verify-backup.ts recovery/
+
+# 3. Restore to new program
+ts-node scripts/restore-data.ts recovery/beasts.json
+
+# 4. Validate restoration
+ts-node scripts/validate-restore.ts
+```
+
+---
+
+## 8. FAQ
+
+### Q: How do I reset my devnet environment?
+
+```bash
+# 1. Delete existing keypair
+rm ~/.config/solana/id.json
+
+# 2. Create new keypair
+solana-keygen new --outfile ~/.config/solana/id.json
+
+# 3. Get fresh airdrop
+solana airdrop 2
+
+# 4. Redeploy program
+anchor clean && anchor build && anchor deploy
+```
+
+### Q: My transactions are failing with "Account does not exist"
+
+Check that all PDAs are derived correctly:
+```typescript
+// Ensure seeds match program
+const [beastPDA, bump] = PublicKey.findProgramAddressSync(
+  [Buffer.from('beast'), mint.toBuffer()],
+  programId
+);
+
+// Verify PDA exists
+const accountInfo = await connection.getAccountInfo(beastPDA);
+if (!accountInfo) {
+  console.error('Beast account not found. Was it minted correctly?');
+}
+```
+
+### Q: How do I test on mainnet without risking real funds?
+
+Use a separate test wallet:
+```bash
+# Create test wallet
+solana-keygen new --outfile test-wallet.json
+
+# Fund with minimal SOL (0.1 SOL)
+solana transfer <TEST_WALLET_ADDRESS> 0.1 --from mainnet-wallet.json
+
+# Test operations
+solana config set --keypair test-wallet.json
+# ... run tests
+```
+
+### Q: Beast traits changed unexpectedly
+
+Check for:
+1. Concurrent modifications (race condition)
+2. Unsigned transaction exploitation
+3. Admin key compromise
+
+```bash
+# Audit recent transactions
+solana transaction-history <BEAST_PDA>
+
+# Check signatures
+ts-node scripts/verify-signatures.ts <TRANSACTION_ID>
+```
+
+### Q: How do I monitor program health?
+
+**Set up monitoring:**
+```typescript
+// monitoring/health-check.ts
+import { Connection, PublicKey } from '@solana/web3.js';
+
+async function checkProgramHealth() {
+  const checks = {
+    programExists: false,
+    configValid: false,
+    canMint: false,
+    computeBudget: 0,
+  };
+
+  
+

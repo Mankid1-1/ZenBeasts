@@ -1,0 +1,250 @@
+[2025-11-12 22:04:39] [INFO] Installation started
+[2025-11-12 22:05:48] [INFO] Installation started
+[2025-11-12 22:06:07] [INFO] Installation started
+[2025-11-12 22:06:15] [INFO] Installation started
+[2025-11-12 22:06:33] [INFO] Installation started
+[2025-11-12 22:08:30] [INFO] Installation started
+[2025-11-12 22:08:59] [INFO] Installation started
+[2025-11-12 22:09:09] [INFO] Installation started
+[2025-11-12 22:09:20] [INFO] Installation started
+[2025-11-12 22:09:35] [INFO] Installation started
+[2025-11-12 22:10:29] [INFO] Installation started
+[2025-11-12 22:27:22] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-12 22:27:22] [INFO] PowerShell: 5.1.17763.134
+[2025-11-12 22:27:22] [INFO] Architecture: 64-bit
+[2025-11-12 22:27:22] [SUCCESS] Running with Administrator privileges
+[2025-11-12 22:27:24] [SUCCESS] Internet connection verified
+[2025-11-12 22:27:25] [DEBUG] Free space on drive C: 25.84GB
+[2025-11-12 22:27:25] [SUCCESS] Sufficient disk space available
+[2025-11-12 22:27:25] [INFO] Installation mode: 1
+[2025-11-12 22:27:25] [INFO] Logs: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-12 22:27:25] [INFO] STEP 1/12 : Installing Chocolatey Package Manager
+[2025-11-12 22:27:26] [DEBUG] Attempt 1 of 3 for: Chocolatey installation
+[2025-11-12 22:30:48] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-12 22:30:48] [INFO] PowerShell: 5.1.17763.134
+[2025-11-12 22:30:48] [INFO] Architecture: 64-bit
+[2025-11-12 22:30:48] [SUCCESS] Running with Administrator privileges
+[2025-11-12 22:30:48] [SUCCESS] Internet connection verified
+[2025-11-12 22:30:49] [DEBUG] Free space on drive C: 26GB
+[2025-11-12 22:30:49] [SUCCESS] Sufficient disk space available
+[2025-11-12 22:30:49] [INFO] Installation mode: 1
+[2025-11-12 22:30:49] [INFO] Logs: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-12 22:30:49] [INFO] STEP 1/12 : Installing Chocolatey Package Manager
+[2025-11-12 22:30:49] [DEBUG] Attempt 1 of 1 for: Chocolatey installation
+[2025-11-12 22:33:04] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-12 22:33:04] [INFO] PowerShell: 5.1.17763.134
+[2025-11-12 22:33:04] [INFO] Architecture: 64-bit
+[2025-11-12 22:33:04] [SUCCESS] Running with Administrator privileges
+[2025-11-12 22:33:04] [SUCCESS] Internet connection verified
+[2025-11-12 22:33:05] [DEBUG] Free space on drive C: 25.41GB
+[2025-11-12 22:33:05] [SUCCESS] Sufficient disk space available
+[2025-11-12 22:33:05] [INFO] Installation mode: 1
+[2025-11-12 22:33:05] [INFO] Logs: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-12 22:33:05] [INFO] Skipping already installed components
+[2025-11-12 22:33:05] [INFO] STEP 1/12 : Installing Chocolatey Package Manager
+[2025-11-12 22:33:05] [DEBUG] Attempt 1 of 1 for: Chocolatey installation
+[2025-11-13 00:20:04] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-13 00:20:04] [INFO] PowerShell: 5.1.17763.134
+[2025-11-13 00:20:04] [INFO] Architecture: 64-bit
+[2025-11-13 00:20:04] [WARNING] Not running as Administrator
+[2025-11-13 00:20:04] [WARNING] Some installations may fail without admin privileges
+[2025-11-13 00:20:38] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-13 00:20:38] [INFO] PowerShell: 5.1.17763.134
+[2025-11-13 00:20:38] [INFO] Architecture: 64-bit
+[2025-11-13 00:20:38] [SUCCESS] Running with Administrator privileges
+[2025-11-13 00:20:39] [SUCCESS] Internet connection verified
+[2025-11-13 00:20:40] [DEBUG] Free space on drive C: 15.47GB
+[2025-11-13 00:20:40] [WARNING] Less than 20GB free disk space
+[2025-11-13 00:26:29] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-13 00:26:29] [INFO] PowerShell: 5.1.17763.134
+[2025-11-13 00:26:29] [INFO] Architecture: 64-bit
+[2025-11-13 00:26:29] [SUCCESS] Running with Administrator privileges
+[2025-11-13 00:26:30] [SUCCESS] Internet connection verified
+[2025-11-13 00:26:30] [DEBUG] Free space on drive C: 20.61GB
+[2025-11-13 00:26:30] [SUCCESS] Sufficient disk space available
+[2025-11-13 00:26:30] [INFO] Installation mode: 1
+[2025-11-13 00:26:30] [INFO] Logs: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-13 00:26:30] [INFO] STEP 1/12 : Installing Chocolatey Package Manager
+[2025-11-13 00:26:30] [DEBUG] Attempt 1 of 1 for: Chocolatey installation
+[2025-11-13 00:36:11] [DEBUG] Chocolatey installation succeeded on attempt 1
+[2025-11-13 00:36:11] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 00:36:11] [DEBUG] PATH updated in current session
+[2025-11-13 00:36:11] [SUCCESS] Chocolatey installed successfully
+[2025-11-13 00:36:11] [WARNING] 
+[2025-11-13 00:36:11] [WARNING] ==========================================
+[2025-11-13 00:36:11] [WARNING]   REBOOT MAY BE REQUIRED
+[2025-11-13 00:36:11] [WARNING] ==========================================
+[2025-11-13 00:36:11] [WARNING] Chocolatey installed .NET Framework which requires a reboot.
+[2025-11-13 00:36:11] [WARNING] You can continue installation and reboot later, or reboot now.
+[2025-11-13 00:36:11] [WARNING] 
+[2025-11-13 00:36:11] [INFO] Options:
+[2025-11-13 00:36:11] [INFO]   1. Continue installation (reboot later)
+[2025-11-13 00:36:11] [INFO]   2. Reboot now and resume with: .\install.ps1 -Resume
+[2025-11-13 00:36:11] [INFO]   3. Cancel installation
+[2025-11-13 00:39:07] [INFO] Continuing installation. Remember to reboot later!
+[2025-11-13 00:39:07] [INFO] STEP 2/12 : Installing Git
+[2025-11-13 00:39:07] [DEBUG] Checking for Git...
+[2025-11-13 00:39:07] [DEBUG] Git not found
+[2025-11-13 00:39:08] [DEBUG] Installing Git via Chocolatey: git
+[2025-11-13 00:39:08] [DEBUG] Attempt 1 of 3 for: Git installation
+[2025-11-13 00:39:18] [DEBUG] Git installation failed on attempt 1: Chocolatey install failed with exit code 1
+[2025-11-13 00:39:19] [WARNING] Retrying in 2 seconds... (1/3)
+[2025-11-13 00:39:21] [DEBUG] Attempt 2 of 3 for: Git installation
+[2025-11-13 00:39:22] [DEBUG] Git installation failed on attempt 2: Chocolatey install failed with exit code 1
+[2025-11-13 00:39:22] [WARNING] Retrying in 2 seconds... (2/3)
+[2025-11-13 00:39:24] [DEBUG] Attempt 3 of 3 for: Git installation
+[2025-11-13 00:39:25] [DEBUG] Git installation failed on attempt 3: Chocolatey install failed with exit code 1
+[2025-11-13 00:39:25] [ERROR] Failed to install Git: Failed after 3 attempts: Chocolatey install failed with exit code 1
+[2025-11-13 00:39:25] [ERROR] Installation failed: Failed after 3 attempts: Chocolatey install failed with exit code 1
+[2025-11-13 00:39:25] [ERROR] Stack trace: at Invoke-WithRetry, C:\Users\babylove23\ZenBeasts\install.ps1: line 404
+at Install-Tool, C:\Users\babylove23\ZenBeasts\install.ps1: line 551
+at Install-Git, C:\Users\babylove23\ZenBeasts\install.ps1: line 587
+at Start-Installation, C:\Users\babylove23\ZenBeasts\install.ps1: line 966
+at <ScriptBlock>, C:\Users\babylove23\ZenBeasts\install.ps1: line 1206
+at <ScriptBlock>, <No file>: line 1
+[2025-11-13 00:39:25] [WARNING] Check logs for details: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-13 01:57:27] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-13 01:57:27] [INFO] PowerShell: 5.1.17763.134
+[2025-11-13 01:57:27] [INFO] Architecture: 64-bit
+[2025-11-13 01:57:27] [SUCCESS] Running with Administrator privileges
+[2025-11-13 01:57:28] [SUCCESS] Internet connection verified
+[2025-11-13 01:57:28] [DEBUG] Free space on drive C: 30.68GB
+[2025-11-13 01:57:28] [SUCCESS] Sufficient disk space available
+[2025-11-13 01:57:28] [INFO] Installation mode: 1
+[2025-11-13 01:57:28] [INFO] Logs: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-13 01:57:28] [INFO] STEP 1/12 : Installing Chocolatey Package Manager
+[2025-11-13 01:57:28] [SUCCESS] Chocolatey already installed
+[2025-11-13 01:57:28] [INFO] STEP 2/12 : Installing Git
+[2025-11-13 01:57:28] [DEBUG] Checking for Git...
+[2025-11-13 01:57:28] [DEBUG] Git not found
+[2025-11-13 01:57:28] [DEBUG] Installing Git via Chocolatey: git
+[2025-11-13 01:57:28] [DEBUG] Attempt 1 of 3 for: Git installation
+[2025-11-13 01:57:37] [DEBUG] Git installation succeeded on attempt 1
+[2025-11-13 01:57:37] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 01:57:37] [DEBUG] PATH updated in current session
+[2025-11-13 01:57:37] [DEBUG] Running post-install script for Git
+[2025-11-13 01:57:37] [DEBUG] Could not configure git: The term 'git' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[2025-11-13 01:57:37] [DEBUG] Checking for Git...
+[2025-11-13 01:57:37] [DEBUG] Git not found
+[2025-11-13 01:57:37] [ERROR] Failed to install Git: Git command not available after installation
+[2025-11-13 01:57:37] [ERROR] Installation failed: Git command not available after installation
+[2025-11-13 01:57:37] [ERROR] Stack trace: at Install-Tool, C:\Users\babylove23\ZenBeasts\install.ps1: line 575
+at Install-Git, C:\Users\babylove23\ZenBeasts\install.ps1: line 587
+at Start-Installation, C:\Users\babylove23\ZenBeasts\install.ps1: line 966
+at <ScriptBlock>, C:\Users\babylove23\ZenBeasts\install.ps1: line 1206
+at <ScriptBlock>, <No file>: line 1
+[2025-11-13 01:57:37] [WARNING] Check logs for details: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-13 02:00:29] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-13 02:00:29] [INFO] PowerShell: 5.1.17763.134
+[2025-11-13 02:00:29] [INFO] Architecture: 64-bit
+[2025-11-13 02:00:29] [SUCCESS] Running with Administrator privileges
+[2025-11-13 02:00:29] [SUCCESS] Internet connection verified
+[2025-11-13 02:00:29] [DEBUG] Free space on drive C: 30.68GB
+[2025-11-13 02:00:29] [SUCCESS] Sufficient disk space available
+[2025-11-13 02:00:29] [INFO] Installation mode: 1
+[2025-11-13 02:00:29] [INFO] Logs: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-13 02:00:29] [INFO] STEP 1/12 : Installing Chocolatey Package Manager
+[2025-11-13 02:00:30] [SUCCESS] Chocolatey already installed
+[2025-11-13 02:00:30] [INFO] STEP 2/12 : Installing Git
+[2025-11-13 02:00:30] [DEBUG] Checking for Git...
+[2025-11-13 02:00:30] [DEBUG] Git not found
+[2025-11-13 02:00:30] [DEBUG] Installing Git via Chocolatey: git
+[2025-11-13 02:00:30] [DEBUG] Attempt 1 of 3 for: Git installation
+[2025-11-13 02:00:39] [DEBUG] Git installation succeeded on attempt 1
+[2025-11-13 02:00:41] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:00:41] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:00:42] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:00:42] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:00:42] [DEBUG] Running post-install script for Git
+[2025-11-13 02:00:43] [DEBUG] Could not configure git: The term 'git' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[2025-11-13 02:00:43] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:00:43] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:00:43] [DEBUG] Checking for Git...
+[2025-11-13 02:00:43] [DEBUG] Git not found
+[2025-11-13 02:00:43] [DEBUG] Command not available yet, waiting... (attempt 1/5)
+[2025-11-13 02:00:45] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:00:45] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:00:45] [DEBUG] Checking for Git...
+[2025-11-13 02:00:45] [DEBUG] Git not found
+[2025-11-13 02:00:45] [DEBUG] Command not available yet, waiting... (attempt 2/5)
+[2025-11-13 02:00:47] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:00:47] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:00:47] [DEBUG] Checking for Git...
+[2025-11-13 02:00:47] [DEBUG] Git not found
+[2025-11-13 02:00:47] [DEBUG] Command not available yet, waiting... (attempt 3/5)
+[2025-11-13 02:00:49] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:00:49] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:00:49] [DEBUG] Checking for Git...
+[2025-11-13 02:00:49] [DEBUG] Git not found
+[2025-11-13 02:00:49] [DEBUG] Command not available yet, waiting... (attempt 4/5)
+[2025-11-13 02:00:51] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:00:51] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:00:51] [DEBUG] Checking for Git...
+[2025-11-13 02:00:51] [DEBUG] Git not found
+[2025-11-13 02:00:51] [ERROR] Failed to install Git: Git command not available after installation. Try restarting your terminal.
+[2025-11-13 02:00:51] [ERROR] Installation failed: Git command not available after installation. Try restarting your terminal.
+[2025-11-13 02:00:51] [ERROR] Stack trace: at Install-Tool, C:\Users\babylove23\ZenBeasts\install.ps1: line 630
+at Install-Git, C:\Users\babylove23\ZenBeasts\install.ps1: line 642
+at Start-Installation, C:\Users\babylove23\ZenBeasts\install.ps1: line 1021
+at <ScriptBlock>, C:\Users\babylove23\ZenBeasts\install.ps1: line 1261
+at <ScriptBlock>, <No file>: line 1
+[2025-11-13 02:00:51] [WARNING] Check logs for details: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-13 02:03:55] [INFO] OS: Microsoft Windows NT 10.0.17763.0
+[2025-11-13 02:03:55] [INFO] PowerShell: 5.1.17763.134
+[2025-11-13 02:03:55] [INFO] Architecture: 64-bit
+[2025-11-13 02:03:55] [SUCCESS] Running with Administrator privileges
+[2025-11-13 02:03:57] [SUCCESS] Internet connection verified
+[2025-11-13 02:03:57] [DEBUG] Free space on drive C: 30.68GB
+[2025-11-13 02:03:57] [SUCCESS] Sufficient disk space available
+[2025-11-13 02:03:57] [INFO] Installation mode: 1
+[2025-11-13 02:03:57] [INFO] Logs: C:\Users\babylove23\ZenBeasts\setup\install.log
+[2025-11-13 02:03:57] [INFO] STEP 1/12 : Installing Chocolatey Package Manager
+[2025-11-13 02:03:57] [SUCCESS] Chocolatey already installed
+[2025-11-13 02:03:57] [INFO] STEP 2/12 : Installing Git
+[2025-11-13 02:03:57] [DEBUG] Checking for Git...
+[2025-11-13 02:03:57] [DEBUG] Git not found
+[2025-11-13 02:03:57] [DEBUG] Installing Git via Chocolatey: git
+[2025-11-13 02:03:57] [DEBUG] Attempt 1 of 3 for: Git installation
+[2025-11-13 02:04:07] [DEBUG] Git installation succeeded on attempt 1
+[2025-11-13 02:04:09] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:09] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:10] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:10] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:10] [DEBUG] Running post-install script for Git
+[2025-11-13 02:04:10] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:10] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:10] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:10] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:10] [DEBUG] Checking for Git...
+[2025-11-13 02:04:10] [DEBUG] Git not found
+[2025-11-13 02:04:10] [DEBUG] Command not available yet, waiting... (attempt 1/5)
+[2025-11-13 02:04:12] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:12] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:12] [DEBUG] Checking for Git...
+[2025-11-13 02:04:12] [DEBUG] Git not found
+[2025-11-13 02:04:12] [DEBUG] Command not available yet, waiting... (attempt 2/5)
+[2025-11-13 02:04:14] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:14] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:14] [DEBUG] Checking for Git...
+[2025-11-13 02:04:14] [DEBUG] Git not found
+[2025-11-13 02:04:14] [DEBUG] Command not available yet, waiting... (attempt 3/5)
+[2025-11-13 02:04:16] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:16] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:16] [DEBUG] Checking for Git...
+[2025-11-13 02:04:16] [DEBUG] Git not found
+[2025-11-13 02:04:16] [DEBUG] Command not available yet, waiting... (attempt 4/5)
+[2025-11-13 02:04:18] [DEBUG] Refreshing PATH environment variable
+[2025-11-13 02:04:18] [DEBUG] PATH updated in current session: 12 paths
+[2025-11-13 02:04:18] [DEBUG] Checking for Git...
+[2025-11-13 02:04:18] [DEBUG] Git not found
+[2025-11-13 02:04:18] [WARNING] Git was installed but command is not immediately available.
+[2025-11-13 02:04:18] [WARNING] Please close and reopen your terminal, then run: .\install.ps1 -Resume
+[2025-11-13 02:04:18] [DEBUG] Installation state saved
+[2025-11-13 02:04:18] [ERROR] Failed to install Git: Git command not available after installation. Please restart your terminal and run: .\install.ps1 -Resume
+[2025-11-13 02:04:18] [ERROR] Installation failed: Git command not available after installation. Please restart your terminal and run: .\install.ps1 -Resume
+[2025-11-13 02:04:18] [ERROR] Stack trace: at Install-Tool, C:\Users\babylove23\ZenBeasts\install.ps1: line 682
+at Install-Git, C:\Users\babylove23\ZenBeasts\install.ps1: line 704
+at Start-Installation, C:\Users\babylove23\ZenBeasts\install.ps1: line 1115
+at <ScriptBlock>, C:\Users\babylove23\ZenBeasts\install.ps1: line 1355
+at <ScriptBlock>, <No file>: line 1
+[2025-11-13 02:04:18] [WARNING] Check logs for details: C:\Users\babylove23\ZenBeasts\setup\install.log

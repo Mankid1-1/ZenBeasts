@@ -1,0 +1,147 @@
+# ZenBeasts Quick Start Guide
+
+## 🚀 Get Started in 5 Minutes
+
+### 1. Install Dependencies (One-time setup)
+
+```bash
+# Root dependencies
+npm install
+
+# Frontend dependencies
+cd frontend && npm install && cd ..
+
+# API dependencies
+cd api && npm install && cd ..
+```
+
+### 2. Build the Solana Program
+
+```bash
+anchor build
+```
+
+This generates the IDL and compiles the Rust program.
+
+### 3. Configure Environment
+
+```bash
+# Copy environment templates
+cp .env.example .env
+cp frontend/.env.template frontend/.env.local
+cp api/.env.template api/.env
+```
+
+### 4. Start Development
+
+```bash
+# Terminal 1: Start local Solana validator (optional)
+solana-test-validator
+
+# Terminal 2: Start frontend
+cd frontend && npm run dev
+
+# Terminal 3: Start API
+cd api && npm run dev
+```
+
+## 🧪 Run Tests
+
+```bash
+# Anchor integration tests
+anchor test
+
+# Frontend unit tests
+cd frontend && npm test
+
+# Frontend tests with coverage
+cd frontend && npm test -- --coverage
+```
+
+## 📱 Mobile Development
+
+The frontend is fully responsive and supports:
+- Mobile wallet connections (Phantom, Solflare)
+- Touch-friendly UI (44x44px tap targets)
+- Responsive breakpoints (xs, sm, md, lg, xl, 2xl)
+- Mobile-optimized layouts
+
+Test on mobile:
+1. Start dev server: `cd frontend && npm run dev`
+2. Find your local IP: `ipconfig` (Windows) or `ifconfig` (Mac/Linux)
+3. Access from mobile: `http://YOUR_IP:3000`
+
+## ♿ Accessibility
+
+Built-in accessibility features:
+- ARIA labels and roles
+- Keyboard navigation
+- Screen reader support
+- ESLint accessibility checks
+
+Run accessibility checks:
+```bash
+cd frontend && npm run lint
+```
+
+## 🔧 Key Technologies
+
+- **Blockchain**: Solana + Anchor 0.29.0
+- **Frontend**: Next.js 14 + React 18 + TypeScript (strict)
+- **Styling**: Tailwind CSS 3.4
+- **State**: Zustand
+- **Testing**: Jest + fast-check (PBT) + proptest (Rust PBT)
+- **Wallet**: Solana Wallet Adapter
+
+## 📚 Documentation
+
+- [SETUP.md](./SETUP.md) - Detailed setup instructions
+- [TASK_1_COMPLETION_SUMMARY.md](./TASK_1_COMPLETION_SUMMARY.md) - Configuration details
+- [.kiro/specs/zenbeasts-gaming-network/](./kiro/specs/zenbeasts-gaming-network/) - Full specification
+
+## 🐛 Troubleshooting
+
+### "anchor: command not found"
+```bash
+cargo install --git https://github.com/coral-xyz/anchor anchor-cli --locked
+```
+
+### "Module not found" in frontend
+```bash
+cd frontend && npm install
+```
+
+### Wallet connection fails
+- Check RPC endpoint is accessible
+- Verify wallet extension is installed
+- Check browser console for errors
+
+### Tests fail
+```bash
+# Ensure local validator is running
+solana-test-validator
+
+# In another terminal
+anchor test
+```
+
+## 🎯 Next Steps
+
+After setup, proceed to implement tasks in order:
+1. ✅ Task 1: Project structure (COMPLETE)
+2. Task 2: Program state accounts
+3. Task 3: Program initialization
+4. Task 4: Beast minting
+5. ... (see tasks.md)
+
+Open `.kiro/specs/zenbeasts-gaming-network/tasks.md` to view all tasks.
+
+## 💡 Tips
+
+- Use `anchor test` frequently to catch issues early
+- Run `npm run lint` in frontend to check code quality
+- Use TypeScript strict mode - it catches bugs at compile time
+- Test on mobile devices regularly
+- Run property-based tests with high iteration counts (100+)
+
+Happy coding! 🎮

@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "New File Cleanup Review",
+  "description": "Automatically reviews the entire codebase when new files are created to ensure everything is relevant, tidy, neat, and concise with no duplicates or obsolete files",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "**/*",
+      "C:\\Users\\mepep\\OneDrive\\Desktop\\Zbeasts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A new file has been created in the codebase. Please review the entire project structure to ensure:\n1. The new file doesn't duplicate existing functionality\n2. All files remain relevant and serve clear purposes\n3. No obsolete or outdated files exist that should be removed\n4. The codebase remains organized in a tidy, neat, and concise manner\n5. Identify any files that have become redundant with this addition\n\nFocus on identifying:\n- Whether the new file duplicates existing functionality\n- If any old files should be removed or consolidated\n- Duplicate configuration or documentation\n- Obsolete implementations that are now superseded\n- Opportunities to consolidate similar files\n\nProvide specific recommendations for cleanup and consolidation."
+  },
+  "workspaceFolderName": "Zbeasts",
+  "shortName": "new-file-cleanup-review"
+}

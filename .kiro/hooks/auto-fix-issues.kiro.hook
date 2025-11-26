@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Auto-Fix Issues",
+  "description": "Automatically detects and fixes genuine issues, errors, bugs, syntax problems, and optimization opportunities in any file within the project. When triggered, analyzes the changed file for problems and implements fixes immediately without asking for permission.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*",
+      "C:\\Users\\mepep\\OneDrive\\Desktop\\Zbeasts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Automatically detects and fixes genuine issues, errors, bugs, syntax problems, and optimization opportunities in any file within the project. When triggered, analyzes the changed file for problems and implements fixes immediately without asking for permission."
+  }
+}

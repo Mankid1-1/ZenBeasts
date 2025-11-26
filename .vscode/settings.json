@@ -1,0 +1,5 @@
+{
+    "rumdl.enable": false,
+    "rumdl.diagnostics.deduplicate": false,
+    "typescript.autoClosingTags": false
+}

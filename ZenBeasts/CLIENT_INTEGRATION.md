@@ -1,0 +1,998 @@
+# ZenBeasts Client Integration Guide
+
+**Version:** 2.0  
+**Last Updated:** 2024
+
+---
+
+## Table of Contents
+
+1. [Quick Start](#1-quick-start)
+2. [Wallet Integration](#2-wallet-integration)
+3. [Program Interaction](#3-program-interaction)
+4. [React Hooks](#4-react-hooks)
+5. [Transaction Management](#5-transaction-management)
+6. [State Management](#6-state-management)
+7. [Error Handling](#7-error-handling)
+8. [UI Components](#8-ui-components)
+9. [Best Practices](#9-best-practices)
+10. [Troubleshooting](#10-troubleshooting)
+
+---
+
+## 1. Quick Start
+
+### 1.1 Installation
+
+```bash
+# Create Next.js app with TypeScript
+npx create-next-app@latest zenbeasts-frontend --typescript --tailwind --app
+
+cd zenbeasts-frontend
+
+# Install Solana dependencies
+npm install @solana/web3.js @solana/wallet-adapter-react @solana/wallet-adapter-react-ui @solana/wallet-adapter-wallets @solana/wallet-adapter-base @coral-xyz/anchor @solana/spl-token
+
+# Install UI dependencies
+npm install @radix-ui/react-dialog @radix-ui/react-toast zustand
+
+# Install dev dependencies
+npm install --save-dev @types/node
+```
+
+### 1.2 Project Structure
+
+```
+src/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── providers.tsx
+├── components/
+│   ├── wallet/
+│   │   └── WalletButton.tsx
+│   ├── beast/
+│   │   ├── BeastCard.tsx
+│   │   ├── MintForm.tsx
+│   │   └── ActivityPanel.tsx
+│   └── ui/
+│       └── Toast.tsx
+├── hooks/
+│   ├── useProgram.ts
+│   ├── useBeast.ts
+│   ├── useActivity.ts
+│   └── useUpgrade.ts
+├── lib/
+│   ├── anchor/
+│   │   ├── idl.ts
+│   │   └── setup.ts
+│   ├── solana/
+│   │   ├── connection.ts
+│   │   └── utils.ts
+│   └── store/
+│       └── beastStore.ts
+├── types/
+│   ├── beast.ts
+│   └── program.ts
+└── utils/
+    ├── traits.ts
+    └── formatting.ts
+```
+
+### 1.3 Environment Configuration
+
+**File: `.env.local`**
+
+```env
+# Network Configuration
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_RPC_ENDPOINT=https://api.devnet.solana.com
+
+# Program IDs
+NEXT_PUBLIC_PROGRAM_ID=Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS
+NEXT_PUBLIC_ZEN_MINT=YourZenMintAddressHere
+
+# Optional: Enhanced RPC
+NEXT_PUBLIC_HELIUS_API_KEY=your_helius_api_key_here
+
+# Backend API (if using)
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+---
+
+## 2. Wallet Integration
+
+### 2.1 Wallet Provider Setup
+
+**File: `src/app/providers.tsx`**
+
+```typescript
+'use client';
+
+import { FC, ReactNode, useMemo } from 'react';
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { PhantomWalletAdapter, SolflareWalletAdapter, BackpackWalletAdapter } from '@solana/wallet-adapter-wallets';
+import { clusterApiUrl } from '@solana/web3.js';
+
+require('@solana/wallet-adapter-react-ui/styles.css');
+
+interface ProvidersProps {
+  children: ReactNode;
+}
+
+export const Providers: FC<ProvidersProps> = ({ children }) => {
+  const network = process.env.NEXT_PUBLIC_SOLANA_NETWORK || 'devnet';
+  const endpoint = useMemo(() => {
+    if (process.env.NEXT_PUBLIC_RPC_ENDPOINT) {
+      return process.env.NEXT_PUBLIC_RPC_ENDPOINT;
+    }
+    return clusterApiUrl(network as 'devnet' | 'mainnet-beta');
+  }, [network]);
+
+  const wallets = useMemo(
+    () => [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
+      new BackpackWalletAdapter(),
+    ],
+    []
+  );
+
+  return (
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider wallets={wallets} autoConnect>
+        <WalletModalProvider>
+          {children}
+        </WalletModalProvider>
+      </WalletProvider>
+    </ConnectionProvider>
+  );
+};
+```
+
+**File: `src/app/layout.tsx`**
+
+```typescript
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Providers } from './providers';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'ZenBeasts - Solana NFT Ecosystem',
+  description: 'Mint, evolve, and battle unique creatures on Solana',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+### 2.2 Custom Wallet Button
+
+**File: `src/components/wallet/WalletButton.tsx`**
+
+```typescript
+'use client';
+
+import { FC } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+
+export const WalletButton: FC = () => {
+  const { publicKey, connected } = useWallet();
+
+  return (
+    <div className="flex items-center gap-4">
+      <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700" />
+      {connected && publicKey && (
+        <div className="text-sm text-gray-400">
+          {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## 3. Program Interaction
+
+### 3.1 Anchor Program Setup
+
+**File: `src/lib/anchor/setup.ts`**
+
+```typescript
+import { AnchorProvider, Program, Idl } from '@coral-xyz/anchor';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { AnchorWallet } from '@solana/wallet-adapter-react';
+import idl from './idl.json';
+
+export const PROGRAM_ID = new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID!);
+export const ZEN_MINT = new PublicKey(process.env.NEXT_PUBLIC_ZEN_MINT!);
+
+export function getProgram(connection: Connection, wallet: AnchorWallet) {
+  const provider = new AnchorProvider(
+    connection,
+    wallet,
+    { commitment: 'confirmed' }
+  );
+
+  return new Program(idl as Idl, PROGRAM_ID, provider);
+}
+
+export function getProgramConfigPDA(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('config')],
+    PROGRAM_ID
+  );
+}
+
+export function getBeastPDA(mint: PublicKey): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from('beast'), mint.toBuffer()],
+    PROGRAM_ID
+  );
+}
+
+export function getMetadataPDA(mint: PublicKey): [PublicKey, number] {
+  const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
+    'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+  );
+
+  return PublicKey.findProgramAddressSync(
+    [
+      Buffer.from('metadata'),
+      TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+      mint.toBuffer(),
+    ],
+    TOKEN_METADATA_PROGRAM_ID
+  );
+}
+
+export function getMasterEditionPDA(mint: PublicKey): [PublicKey, number] {
+  const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
+    'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+  );
+
+  return PublicKey.findProgramAddressSync(
+    [
+      Buffer.from('metadata'),
+      TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+      mint.toBuffer(),
+      Buffer.from('edition'),
+    ],
+    TOKEN_METADATA_PROGRAM_ID
+  );
+}
+```
+
+### 3.2 Connection Utilities
+
+**File: `src/lib/solana/connection.ts`**
+
+```typescript
+import { Connection, Commitment } from '@solana/web3.js';
+
+const COMMITMENT: Commitment = 'confirmed';
+
+export function getConnection(): Connection {
+  const endpoint = process.env.NEXT_PUBLIC_RPC_ENDPOINT || 'https://api.devnet.solana.com';
+  
+  return new Connection(endpoint, {
+    commitment: COMMITMENT,
+    confirmTransactionInitialTimeout: 60000,
+  });
+}
+
+export async function confirmTransaction(
+  connection: Connection,
+  signature: string
+): Promise<void> {
+  const latestBlockhash = await connection.getLatestBlockhash();
+
+  await connection.confirmTransaction(
+    {
+      signature,
+      blockhash: latestBlockhash.blockhash,
+      lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    },
+    COMMITMENT
+  );
+}
+```
+
+---
+
+## 4. React Hooks
+
+### 4.1 useProgram Hook
+
+**File: `src/hooks/useProgram.ts`**
+
+```typescript
+import { useMemo } from 'react';
+import { useConnection, useAnchorWallet } from '@solana/wallet-adapter-react';
+import { Program } from '@coral-xyz/anchor';
+import { getProgram } from '@/lib/anchor/setup';
+
+export function useProgram() {
+  const { connection } = useConnection();
+  const wallet = useAnchorWallet();
+
+  const program = useMemo(() => {
+    if (!wallet) return null;
+    return getProgram(connection, wallet);
+  }, [connection, wallet]);
+
+  return { program, connection };
+}
+```
+
+### 4.2 useBeast Hook
+
+**File: `src/hooks/useBeast.ts`**
+
+```typescript
+import { useState, useEffect, useCallback } from 'react';
+import { PublicKey } from '@solana/web3.js';
+import { useProgram } from './useProgram';
+import { getBeastPDA } from '@/lib/anchor/setup';
+import { Beast } from '@/types/beast';
+
+export function useBeast(mintAddress: string | null) {
+  const { program } = useProgram();
+  const [beast, setBeast] = useState<Beast | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchBeast = useCallback(async () => {
+    if (!program || !mintAddress) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const mint = new PublicKey(mintAddress);
+      const [beastPDA] = getBeastPDA(mint);
+
+      const beastAccount = await program.account.beastAccount.fetch(beastPDA);
+
+      setBeast({
+        mint: beastAccount.mint.toString(),
+        owner: beastAccount.owner.toString(),
+        traits: Array.from(beastAccount.traits),
+        rarityScore: beastAccount.rarityScore.toNumber(),
+        lastActivity: beastAccount.lastActivity.toNumber(),
+        activityCount: beastAccount.activityCount,
+        pendingRewards: beastAccount.pendingRewards.toNumber(),
+      });
+    } catch (err) {
+      console.error('Error fetching beast:', err);
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [program, mintAddress]);
+
+  useEffect(() => {
+    fetchBeast();
+  }, [fetchBeast]);
+
+  return { beast, loading, error, refetch: fetchBeast };
+}
+```
+
+### 4.3 useMintBeast Hook
+
+**File: `src/hooks/useMintBeast.ts`**
+
+```typescript
+import { useState } from 'react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { Keypair, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
+import { BN } from '@coral-xyz/anchor';
+import { useProgram } from './useProgram';
+import { getBeastPDA, getMetadataPDA, getMasterEditionPDA, getProgramConfigPDA } from '@/lib/anchor/setup';
+import { confirmTransaction } from '@/lib/solana/connection';
+
+const TOKEN_METADATA_PROGRAM_ID = new PublicKey(
+  'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+);
+
+export function useMintBeast() {
+  const { publicKey } = useWallet();
+  const { connection } = useConnection();
+  const { program } = useProgram();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const mintBeast = async (name: string, uri: string): Promise<string | null> => {
+    if (!program || !publicKey) {
+      setError(new Error('Wallet not connected'));
+      return null;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const nftMint = Keypair.generate();
+      const seed = new BN(Date.now());
+
+      const [beastAccount] = getBeastPDA(nftMint.publicKey);
+      const [config] = getProgramConfigPDA();
+      const [metadata] = getMetadataPDA(nftMint.publicKey);
+      const [masterEdition] = getMasterEditionPDA(nftMint.publicKey);
+
+      const nftTokenAccount = await getAssociatedTokenAddress(
+        nftMint.publicKey,
+        publicKey
+      );
+
+      const tx = await program.methods
+        .createBeast(seed, name, uri)
+        .accounts({
+          beastAccount,
+          config,
+          nftMint: nftMint.publicKey,
+          nftTokenAccount,
+          metadata,
+          masterEdition,
+          payer: publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+          rent: SYSVAR_RENT_PUBKEY,
+          tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+        })
+        .signers([nftMint])
+        .rpc();
+
+      await confirmTransaction(connection, tx);
+
+      console.log('Beast minted successfully!');
+      console.log('Transaction:', tx);
+      console.log('Mint:', nftMint.publicKey.toString());
+
+      return nftMint.publicKey.toString();
+    } catch (err) {
+      console.error('Error minting beast:', err);
+      setError(err as Error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { mintBeast, loading, error };
+}
+```
+
+### 4.4 useActivity Hook
+
+**File: `src/hooks/useActivity.ts`**
+
+```typescript
+import { useState } from 'react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
+import { useProgram } from './useProgram';
+import { getBeastPDA, getProgramConfigPDA } from '@/lib/anchor/setup';
+import { confirmTransaction } from '@/lib/solana/connection';
+
+export enum ActivityType {
+  Meditation = 0,
+  Yoga = 1,
+  Brawl = 2,
+}
+
+export function useActivity() {
+  const { publicKey } = useWallet();
+  const { connection } = useConnection();
+  const { program } = useProgram();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const performActivity = async (
+    mintAddress: string,
+    activityType: ActivityType
+  ): Promise<boolean> => {
+    if (!program || !publicKey) {
+      setError(new Error('Wallet not connected'));
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const mint = new PublicKey(mintAddress);
+      const [beastAccount] = getBeastPDA(mint);
+      const [config] = getProgramConfigPDA();
+
+      const tx = await program.methods
+        .performActivity(activityType)
+        .accounts({
+          payer: publicKey,
+          beastAccount,
+          programState: config,
+        })
+        .rpc();
+
+      await confirmTransaction(connection, tx);
+
+      console.log('Activity performed successfully!');
+      console.log('Transaction:', tx);
+
+      return true;
+    } catch (err: any) {
+      console.error('Error performing activity:', err);
+      
+      // Parse specific errors
+      if (err.error?.errorCode?.code === 'CooldownActive') {
+        setError(new Error('Cooldown is still active. Please wait before performing another activity.'));
+      } else {
+        setError(err);
+      }
+      
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { performActivity, loading, error };
+}
+```
+
+### 4.5 useUpgrade Hook
+
+**File: `src/hooks/useUpgrade.ts`**
+
+```typescript
+import { useState } from 'react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { PublicKey } from '@solana/web3.js';
+import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from '@solana/spl-token';
+import { BN } from '@coral-xyz/anchor';
+import { useProgram } from './useProgram';
+import { getBeastPDA, ZEN_MINT } from '@/lib/anchor/setup';
+import { confirmTransaction } from '@/lib/solana/connection';
+
+export function useUpgrade() {
+  const { publicKey } = useWallet();
+  const { connection } = useConnection();
+  const { program } = useProgram();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const upgradeTrait = async (
+    mintAddress: string,
+    traitIndex: number,
+    newValue: number,
+    zenAmount: number
+  ): Promise<boolean> => {
+    if (!program || !publicKey) {
+      setError(new Error('Wallet not connected'));
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const mint = new PublicKey(mintAddress);
+      const [beastAccount] = getBeastPDA(mint);
+
+      const userZenAta = await getAssociatedTokenAddress(ZEN_MINT, publicKey);
+
+      // Get program treasury (you need to fetch this from config)
+      const config = await program.account.programConfig.fetch(
+        getProgramConfigPDA()[0]
+      );
+      const programZenVault = config.treasury;
+
+      const tx = await program.methods
+        .upgradeTrait(traitIndex, newValue, new BN(zenAmount))
+        .accounts({
+          user: publicKey,
+          beastAccount,
+          userZenAta,
+          programZenVault,
+          zenMint: ZEN_MINT,
+          programZenVaultAuthority: config.authority,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      await confirmTransaction(connection, tx);
+
+      console.log('Trait upgraded successfully!');
+      console.log('Transaction:', tx);
+
+      return true;
+    } catch (err: any) {
+      console.error('Error upgrading trait:', err);
+
+      if (err.error?.errorCode?.code === 'InsufficientFunds') {
+        setError(new Error('Insufficient ZEN tokens for upgrade'));
+      } else if (err.error?.errorCode?.code === 'NotOwner') {
+        setError(new Error('You do not own this beast'));
+      } else {
+        setError(err);
+      }
+
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { upgradeTrait, loading, error };
+}
+```
+
+---
+
+## 5. Transaction Management
+
+### 5.1 Transaction Builder
+
+**File: `src/lib/solana/transactions.ts`**
+
+```typescript
+import { Connection, Transaction, TransactionInstruction, PublicKey, Signer } from '@solana/web3.js';
+
+export interface TransactionOptions {
+  feePayer?: PublicKey;
+  signers?: Signer[];
+  commitment?: 'processed' | 'confirmed' | 'finalized';
+}
+
+export async function buildAndSendTransaction(
+  connection: Connection,
+  instructions: TransactionInstruction[],
+  feePayer: PublicKey,
+  signers: Signer[] = []
+): Promise<string> {
+  const transaction = new Transaction();
+  
+  for (const instruction of instructions) {
+    transaction.add(instruction);
+  }
+
+  transaction.feePayer = feePayer;
+  transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+  if (signers.length > 0) {
+    transaction.partialSign(...signers);
+  }
+
+  const signature = await connection.sendRawTransaction(transaction.serialize());
+
+  await connection.confirmTransaction(signature, 'confirmed');
+
+  return signature;
+}
+
+export async function simulateTransaction(
+  connection: Connection,
+  transaction: Transaction
+): Promise<{ success: boolean; logs: string[]; error?: string }> {
+  try {
+    const simulation = await connection.simulateTransaction(transaction);
+
+    return {
+      success: !simulation.value.err,
+      logs: simulation.value.logs || [],
+      error: simulation.value.err ? JSON.stringify(simulation.value.err) : undefined,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      logs: [],
+      error: err instanceof Error ? err.message : 'Unknown error',
+    };
+  }
+}
+```
+
+### 5.2 Transaction Status Tracker
+
+**File: `src/hooks/useTransaction.ts`**
+
+```typescript
+import { useState, useCallback } from 'react';
+import { useConnection } from '@solana/wallet-adapter-react';
+
+export enum TransactionStatus {
+  Idle = 'idle',
+  Building = 'building',
+  Signing = 'signing',
+  Sending = 'sending',
+  Confirming = 'confirming',
+  Success = 'success',
+  Error = 'error',
+}
+
+export function useTransaction() {
+  const { connection } = useConnection();
+  const [status, setStatus] = useState<TransactionStatus>(TransactionStatus.Idle);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const execute = useCallback(
+    async (txFunction: () => Promise<string>) => {
+      try {
+        setStatus(TransactionStatus.Building);
+        setError(null);
+        setSignature(null);
+
+        setStatus(TransactionStatus.Signing);
+        const sig = await txFunction();
+
+        setStatus(TransactionStatus.Confirming);
+        setSignature(sig);
+
+        setStatus(TransactionStatus.Success);
+        return sig;
+      } catch (err) {
+        console.error('Transaction error:', err);
+        setError(err as Error);
+        setStatus(TransactionStatus.Error);
+        return null;
+      }
+    },
+    []
+  );
+
+  const reset = useCallback(() => {
+    setStatus(TransactionStatus.Idle);
+    setSignature(null);
+    setError(null);
+  }, []);
+
+  return {
+    status,
+    signature,
+    error,
+    execute,
+    reset,
+    isLoading: [
+      TransactionStatus.Building,
+      TransactionStatus.Signing,
+      TransactionStatus.Sending,
+      TransactionStatus.Confirming,
+    ].includes(status),
+  };
+}
+```
+
+---
+
+## 6. State Management
+
+### 6.1 Beast Store with Zustand
+
+**File: `src/lib/store/beastStore.ts`**
+
+```typescript
+import { create } from 'zustand';
+import { Beast } from '@/types/beast';
+
+interface BeastState {
+  beasts: Record<string, Beast>;
+  selectedBeast: string | null;
+  
+  addBeast: (beast: Beast) => void;
+  updateBeast: (mint: string, updates: Partial<Beast>) => void;
+  removeBeast: (mint: string) => void;
+  selectBeast: (mint: string | null) => void;
+  getBeast: (mint: string) => Beast | undefined;
+}
+
+export const useBeastStore = create<BeastState>((set, get) => ({
+  beasts: {},
+  selectedBeast: null,
+
+  addBeast: (beast) =>
+    set((state) => ({
+      beasts: {
+        ...state.beasts,
+        [beast.mint]: beast,
+      },
+    })),
+
+  updateBeast: (mint, updates) =>
+    set((state) => {
+      const existingBeast = state.beasts[mint];
+      if (!existingBeast) return state;
+
+      return {
+        beasts: {
+          ...state.beasts,
+          [mint]: { ...existingBeast, ...updates },
+        },
+      };
+    }),
+
+  removeBeast: (mint) =>
+    set((state) => {
+      const newBeasts = { ...state.beasts };
+      delete newBeasts[mint];
+      return { beasts: newBeasts };
+    }),
+
+  selectBeast: (mint) => set({ selectedBeast: mint }),
+
+  getBeast: (mint) => get().beasts[mint],
+}));
+```
+
+---
+
+## 7. Error Handling
+
+### 7.1 Error Parser
+
+**File: `src/utils/errorParser.ts`**
+
+```typescript
+export interface ParsedError {
+  code: string;
+  message: string;
+  userFriendly: string;
+}
+
+export function parseError(error: any): ParsedError {
+  // Anchor program errors
+  if (error.error?.errorCode) {
+    const code = error.error.errorCode.code;
+    const message = error.error.errorMessage || error.message;
+
+    return {
+      code,
+      message,
+      userFriendly: getUserFriendlyMessage(code),
+    };
+  }
+
+  // Solana errors
+  if (error.message?.includes('0x1')) {
+    return {
+      code: 'INSUFFICIENT_FUNDS',
+      message: error.message,
+      userFriendly: 'Insufficient SOL for transaction fees. Please add more SOL to your wallet.',
+    };
+  }
+
+  // Wallet errors
+  if (error.message?.includes('User rejected')) {
+    return {
+      code: 'USER_REJECTED',
+      message: error.message,
+      userFriendly: 'Transaction was rejected. Please try again.',
+    };
+  }
+
+  // Generic error
+  return {
+    code: 'UNKNOWN',
+    message: error.message || 'Unknown error',
+    userFriendly: 'An unexpected error occurred. Please try again.',
+  };
+}
+
+function getUserFriendlyMessage(code: string): string {
+  const messages: Record<string, string> = {
+    CooldownActive: 'Please wait before performing another activity. The cooldown period has not passed yet.',
+    NotOwner: 'You do not own this beast and cannot perform this action.',
+    InvalidTraitIndex: 'Invalid trait selected. Please choose a valid trait.',
+    InsufficientFunds: 'You do not have enough ZEN tokens for this operation.',
+    InvalidActivityType: 'Invalid activity selected. Please try again.',
+    NameTooLong: 'Beast name is too long. Maximum 32 characters.',
+    UriTooLong: 'Metadata URI is too long. Maximum 200 characters.',
+  };
+
+  return messages[code] || `Error: ${code}. Please try again or contact support.`;
+}
+```
+
+### 7.2 Error Toast Component
+
+**File: `src/components/ui/ErrorToast.tsx`**
+
+```typescript
+'use client';
+
+import { useEffect } from 'react';
+import { parseError } from '@/utils/errorParser';
+
+interface ErrorToastProps {
+  error: Error | null;
+  onClose: () => void;
+}
+
+export function ErrorToast({ error, onClose }: ErrorToastProps) {
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(onClose, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, onClose]);
+
+  if (!error) return null;
+
+  const parsed = parseError(error);
+
+  return (
+    <div className="fixed bottom-4 right-4 max-w-md bg-red-600 text-white p-4 rounded-lg shadow-lg animate-slide-up">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="font-bold mb-1">Error</h3>
+          <p className="text-sm">{parsed.userFriendly}</p>
+          {process.env.NODE_ENV === 'development' && (
+            <details className="mt-2 text-xs opacity-75">
+              <summary className="cursor-pointer">Technical Details</summary>
+              <pre className="mt-1 overflow-auto">{parsed.message}</pre>
+            </details>
+          )}
+        </div>
+        <button onClick={onClose} className="ml-4 text-xl hover:text-gray-200">
+          ×
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## 8. UI Components
+
+### 8.1 Beast Card Component
+
+**File: `src/components/beast/BeastCard.tsx`**
+
+```typescript
+'use client';
+
+import { FC } from 'react';
+import { Beast } from '@/types/beast';
+import { formatRarity, getTraitName } from '@/utils/traits';
+
+interface BeastCardProps {
+  beast: Beast;
+  onClick?: () => void;
+}
+
+export const BeastCard: FC<BeastCardProps> = ({ beast, onClick }) => {
+  return (
+    <div
+      className="bg-gray-800 rounded-lg p-6 border-2 border-purple-500 hover:border-purple-400 transition-all cursor-pointer"
+      onClick={onClick}
+    >
+      {/* Beast Image/Visualization */}
+      <div className="aspect-square bg-gray-700 rounded-lg mb-4 flex items-center justify-center">
+        <span className="text-6xl">🐉</span>
+      </div>

@@ -1,0 +1,698 @@
+# ZenBeasts Automated Setup System
+
+**Complete automated installation and configuration for all ZenBeasts components**
+
+---
+
+## 🎯 Overview
+
+The ZenBeasts automated setup system provides one-command installation for the entire development environment, including:
+
+- ✅ **All Development Tools** - Git, Node.js, Python, Rust, Solana CLI, Anchor
+- ✅ **Project Dependencies** - Smart contracts, Bot Hub, Frontend
+- ✅ **Configuration Wizard** - Interactive API key and environment setup
+- ✅ **Verification Tools** - Comprehensive health checks
+- ✅ **Docker Support** - Containerized deployment option
+
+---
+
+## 🚀 Quick Start
+
+### Windows (PowerShell)
+
+```powershell
+# Clone the repository
+git clone https://github.com/YOUR_REPO/ZenBeasts.git
+cd ZenBeasts
+
+# Run as Administrator for best results
+# Right-click PowerShell and select "Run as Administrator"
+
+# Execute automated installer
+.\install.ps1
+
+# That's it! Follow the prompts.
+```
+
+### Linux/macOS (Bash)
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_REPO/ZenBeasts.git
+cd ZenBeasts
+
+# Make installer executable
+chmod +x install.sh
+
+# Run installer
+./install.sh
+
+# Follow the prompts
+```
+
+### Docker (Any Platform)
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_REPO/ZenBeasts.git
+cd ZenBeasts
+
+# Copy and configure environment file
+cp .env.template .env
+# Edit .env with your API keys
+
+# Start all services
+docker-compose up -d
+
+# Access services
+# Frontend: http://localhost:3000
+# Bot Hub: http://localhost:5000
+# Grafana: http://localhost:3001
+```
+
+---
+
+## 📦 Installation Options
+
+### 1. Full Stack (Recommended)
+
+Installs everything you need for complete ZenBeasts development:
+
+```powershell
+# Windows
+.\install.ps1 -Mode full
+
+# Linux/macOS
+./install.sh --full
+```
+
+**Includes:**
+- Solana development tools (Rust, Solana CLI, Anchor)
+- Bot Hub automation system (Python, dependencies)
+- Frontend application (Node.js, React, Next.js)
+- All project dependencies
+- Configuration files
+
+**Time:** ~30-45 minutes depending on internet speed
+
+---
+
+### 2. Solana Development Only
+
+For smart contract development:
+
+```powershell
+# Windows
+.\install.ps1 -Mode solana
+
+# Linux/macOS
+./install.sh --solana
+```
+
+**Includes:**
+- Rust toolchain
+- Solana CLI
+- Anchor Framework
+- SPL Token CLI
+- Development keypair setup
+
+**Time:** ~15-20 minutes
+
+---
+
+### 3. Bot Hub Only
+
+For automation and community management:
+
+```powershell
+# Windows
+.\install.ps1 -Mode bot-hub
+
+# Linux/macOS
+./install.sh --bot-hub
+```
+
+**Includes:**
+- Python 3.10+
+- Virtual environment
+- Discord.py, Tweepy, OpenAI
+- Bot orchestrator
+- Configuration templates
+
+**Time:** ~10-15 minutes
+
+---
+
+### 4. Frontend Only
+
+For UI development:
+
+```powershell
+# Windows
+.\install.ps1 -Mode frontend
+
+# Linux/macOS
+./install.sh --frontend
+```
+
+**Includes:**
+- Node.js 18 LTS
+- Next.js framework
+- Solana Web3.js
+- Wallet adapters
+- UI dependencies
+
+**Time:** ~10-15 minutes
+
+---
+
+### 5. Custom Installation
+
+Choose exactly what you want:
+
+```powershell
+# Windows
+.\install.ps1 -Mode custom
+
+# Linux/macOS
+./install.sh --custom
+```
+
+The installer will prompt you for each component.
+
+---
+
+## ⚙️ Configuration Wizard
+
+After installation, run the configuration wizard to set up API keys and environment variables:
+
+```powershell
+# Windows
+.\setup\config-wizard.ps1
+
+# Linux/macOS
+./setup/config-wizard.sh
+```
+
+### What Gets Configured:
+
+1. **Solana Settings**
+   - Network selection (devnet/testnet/mainnet)
+   - RPC endpoint
+   - Program IDs
+   - Helius API key
+
+2. **Discord Bot**
+   - Bot token
+   - Guild ID
+   - Client ID
+
+3. **Twitter Bot**
+   - API key and secret
+   - Access tokens
+   - Bearer token
+
+4. **AI Services (Optional)**
+   - OpenAI API key
+   - Anthropic Claude API key
+
+5. **Database Settings**
+   - Redis connection
+   - PostgreSQL (optional)
+
+6. **Security Keys**
+   - Auto-generated secrets
+   - JWT tokens
+
+---
+
+## 🔍 Verification
+
+Verify your installation is complete and working:
+
+```powershell
+# Windows
+.\setup\verify-setup.ps1
+
+# Linux/macOS
+./setup/verify-setup.sh
+```
+
+The verification script checks:
+- ✅ All required tools installed
+- ✅ Correct versions
+- ✅ Configuration files exist
+- ✅ Network connectivity
+- ✅ Service availability
+- ✅ Dependencies installed
+
+---
+
+## 📁 What Gets Created
+
+After installation, your project structure will include:
+
+```
+ZenBeasts/
+├── .env                          # Main configuration
+├── install.ps1                   # Windows installer
+├── install.sh                    # Linux/macOS installer
+├── programs/                     # Solana smart contracts
+│   ├── Anchor.toml
+│   ├── nft-factory/
+│   ├── activities/
+│   └── economy/
+├── bot-hub/                      # Automation system
+│   ├── .env                      # Bot Hub config
+│   ├── venv/                     # Python virtual environment
+│   ├── orchestrator.py           # Main orchestrator
+│   ├── bots/                     # Bot implementations
+│   ├── config/                   # Configuration files
+│   ├── logs/                     # Log files
+│   └── requirements.txt          # Python dependencies
+├── frontend/                     # Next.js application
+│   ├── .env.local                # Frontend config
+│   ├── node_modules/             # Node dependencies
+│   ├── src/
+│   │   ├── app/                  # Next.js pages
+│   │   ├── components/           # React components
+│   │   └── lib/                  # Utilities
+│   └── package.json              # Node dependencies
+└── setup/                        # Setup scripts
+    ├── install-solana.ps1/sh     # Component installers
+    ├── install-bot-hub.ps1/sh
+    ├── install-frontend.ps1/sh
+    ├── config-wizard.ps1/sh      # Configuration wizard
+    ├── verify-setup.ps1/sh       # Verification script
+    └── install.log               # Installation log
+```
+
+---
+
+## 🛠️ Post-Installation Steps
+
+### 1. Configure Environment
+
+```powershell
+# Run configuration wizard
+.\setup\config-wizard.ps1
+
+# Or manually edit .env files
+# Edit .env
+# Edit bot-hub/.env
+# Edit frontend/.env.local
+```
+
+### 2. Build Smart Contracts
+
+```bash
+cd programs
+anchor build
+anchor test
+```
+
+### 3. Deploy to Devnet
+
+```bash
+solana config set --url devnet
+solana airdrop 2
+anchor deploy
+
+# Save the Program IDs and update .env files!
+```
+
+### 4. Start Bot Hub
+
+```bash
+cd bot-hub
+
+# Windows
+.\venv\Scripts\Activate.ps1
+
+# Linux/macOS
+source venv/bin/activate
+
+# Start orchestrator
+python orchestrator.py
+```
+
+### 5. Launch Frontend
+
+```bash
+cd frontend
+npm run dev
+
+# Access at http://localhost:3000
+```
+
+---
+
+## 🐳 Docker Deployment
+
+For production or simplified development:
+
+### Basic Services
+
+```bash
+# Start Redis and PostgreSQL only
+docker-compose up -d redis postgres
+```
+
+### Full Stack
+
+```bash
+# Start everything
+docker-compose up -d
+```
+
+### With Monitoring
+
+```bash
+# Include Prometheus and Grafana
+docker-compose --profile monitoring up -d
+```
+
+### With All Profiles
+
+```bash
+# Full production setup
+docker-compose --profile api --profile nginx --profile monitoring up -d
+```
+
+### Useful Docker Commands
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Restart service
+docker-compose restart bot-hub
+
+# Stop all
+docker-compose down
+
+# Remove volumes (WARNING: data loss!)
+docker-compose down -v
+
+# Rebuild images
+docker-compose build --no-cache
+```
+
+---
+
+## 🔧 Advanced Options
+
+### Update Installation
+
+```powershell
+# Windows
+.\install.ps1 -Update
+
+# Linux/macOS
+./install.sh --update
+```
+
+### Verify Only (No Installation)
+
+```powershell
+# Windows
+.\install.ps1 -Verify
+
+# Linux/macOS
+./install.sh --verify
+```
+
+### Silent Installation (No Prompts)
+
+```powershell
+# Windows - Use specific mode
+.\install.ps1 -Mode full
+
+# Linux/macOS
+./install.sh --full
+```
+
+---
+
+## 📋 Component-Specific Installation
+
+Install individual components if needed:
+
+### Solana Development
+
+```powershell
+# Windows
+.\setup\install-solana.ps1
+
+# Linux/macOS
+./setup/install-solana.sh
+```
+
+### Bot Hub
+
+```powershell
+# Windows
+.\setup\install-bot-hub.ps1
+
+# Linux/macOS
+./setup/install-bot-hub.sh
+```
+
+### Frontend
+
+```powershell
+# Windows
+.\setup\install-frontend.ps1
+
+# Linux/macOS
+./setup/install-frontend.sh
+```
+
+---
+
+## 🔑 Required API Keys
+
+You'll need these API keys for full functionality:
+
+### Essential
+- **Discord Bot Token** - https://discord.com/developers/applications
+- **Solana RPC** - Public RPC or Helius (recommended)
+
+### Recommended
+- **Helius API Key** - https://helius.xyz/ (for compressed NFTs)
+- **Twitter API Keys** - https://developer.twitter.com/
+
+### Optional
+- **OpenAI API Key** - https://platform.openai.com/ (for AI features)
+- **Anthropic API Key** - https://anthropic.com/ (for Claude)
+- **Google Analytics** - https://analytics.google.com/
+- **Mixpanel** - https://mixpanel.com/
+
+---
+
+## 🐛 Troubleshooting
+
+### Windows Issues
+
+**PowerShell Execution Policy**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**Tools Not Found After Installation**
+```powershell
+# Refresh PATH
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+# Or restart PowerShell
+```
+
+**Anchor Build Fails**
+```powershell
+# Update Anchor
+cargo install --git https://github.com/coral-xyz/anchor anchor-cli --locked --force
+```
+
+### Linux/macOS Issues
+
+**Permission Denied**
+```bash
+chmod +x install.sh
+chmod +x setup/*.sh
+```
+
+**Command Not Found**
+```bash
+# Reload shell configuration
+source ~/.bashrc  # or ~/.zshrc
+
+# Add to PATH manually
+export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+```
+
+### Docker Issues
+
+**Port Already in Use**
+```bash
+# Find process using port
+# Windows
+netstat -ano | findstr :3000
+
+# Linux/macOS
+lsof -ti:3000
+
+# Kill the process or change ports in docker-compose.yml
+```
+
+**Containers Won't Start**
+```bash
+# Check Docker is running
+docker --version
+docker ps
+
+# Reset environment
+docker-compose down -v
+docker-compose up -d --force-recreate
+```
+
+### General Issues
+
+**Installation Fails**
+```bash
+# Check logs
+cat setup/install.log
+
+# Run verification
+.\setup\verify-setup.ps1  # Windows
+./setup/verify-setup.sh   # Linux/macOS
+
+# Try component-specific installer
+```
+
+**Build Errors**
+```bash
+# Clear caches
+rm -rf target/
+rm -rf .next/
+rm -rf node_modules/
+
+# Reinstall dependencies
+anchor build
+npm install
+```
+
+---
+
+## 📚 Documentation
+
+- **[INSTALLATION_GUIDE.md](./INSTALLATION_GUIDE.md)** - Comprehensive installation documentation
+- **[QUICK_START.md](./QUICK_START.md)** - Quick start guide
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture
+- **[TOKENOMICS.md](./TOKENOMICS.md)** - Economic model
+- **[bot-hub/README.md](./bot-hub/README.md)** - Bot Hub documentation
+
+---
+
+## 🆘 Getting Help
+
+1. **Check the Logs**
+   ```bash
+   cat setup/install.log
+   tail -f bot-hub/logs/orchestrator.log
+   docker-compose logs -f
+   ```
+
+2. **Run Verification**
+   ```powershell
+   .\setup\verify-setup.ps1
+   ```
+
+3. **Check Documentation**
+   - Review installation guide
+   - Check component-specific README files
+
+4. **Community Support**
+   - GitHub Issues: Report bugs or ask questions
+   - Discord: Join our community server
+   - Documentation: Browse full docs
+
+---
+
+## ✅ Installation Checklist
+
+- [ ] Clone repository
+- [ ] Run automated installer
+- [ ] Complete configuration wizard
+- [ ] Verify installation
+- [ ] Configure API keys in .env files
+- [ ] Build smart contracts
+- [ ] Deploy to devnet (save Program IDs)
+- [ ] Update Program IDs in configuration
+- [ ] Start Bot Hub
+- [ ] Launch frontend
+- [ ] Test wallet connection
+- [ ] Test bot functionality
+- [ ] Review logs for errors
+
+---
+
+## 🚀 Next Steps
+
+After successful installation:
+
+1. **Explore the Architecture**
+   ```bash
+   # Read system design
+   cat ARCHITECTURE.md
+   ```
+
+2. **Customize Your Build**
+   ```bash
+   # Modify smart contracts
+   cd programs/nft-factory
+   
+   # Customize frontend
+   cd frontend/src
+   
+   # Add new bots
+   cd bot-hub/bots
+   ```
+
+3. **Deploy to Production**
+   - Switch to mainnet-beta
+   - Set up proper security
+   - Configure monitoring
+   - Enable backups
+
+4. **Join the Community**
+   - Star the repository
+   - Join Discord server
+   - Follow on Twitter
+   - Contribute to development
+
+---
+
+## 🎉 Success!
+
+Your ZenBeasts development environment is now fully automated and ready to use!
+
+**Everything is set up:**
+- ✅ Development tools installed
+- ✅ Project dependencies configured
+- ✅ Environment files created
+- ✅ Services ready to run
+
+**Start building:**
+```bash
+# Build contracts
+cd programs && anchor build
+
+# Start Bot Hub
+cd bot-hub && python orchestrator.py
+
+# Launch frontend
+cd frontend && npm run dev
+```
+
+**Welcome to ZenBeasts! 🐉**

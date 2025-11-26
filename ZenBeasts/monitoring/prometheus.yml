@@ -1,0 +1,269 @@
+# ============================================================================
+# ZenBeasts - Prometheus Configuration
+# Metrics collection and monitoring
+# ============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    cluster: 'zenbeasts'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            # - 'alertmanager:9093'
+
+# Rule files
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # ========================================================================
+  # Prometheus Self-Monitoring
+  # ========================================================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+        labels:
+          service: 'prometheus'
+          tier: 'monitoring'
+
+  # ========================================================================
+  # Bot Hub Metrics
+  # ========================================================================
+  - job_name: 'bot-hub'
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - 'bot-hub:9090'
+        labels:
+          service: 'bot-hub'
+          tier: 'application'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'bot_.*'
+        action: keep
+
+  # ========================================================================
+  # API Service Metrics
+  # ========================================================================
+  - job_name: 'api'
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - 'api:8080'
+        labels:
+          service: 'api'
+          tier: 'application'
+    metrics_path: '/metrics'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'http_.*|nodejs_.*|api_.*'
+        action: keep
+
+  # ========================================================================
+  # Frontend Metrics
+  # ========================================================================
+  - job_name: 'frontend'
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+          - 'frontend:3000'
+        labels:
+          service: 'frontend'
+          tier: 'application'
+    metrics_path: '/api/metrics'
+
+  # ========================================================================
+  # PostgreSQL Exporter
+  # ========================================================================
+  - job_name: 'postgres'
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - 'postgres-exporter:9187'
+        labels:
+          service: 'postgres'
+          tier: 'database'
+
+  # ========================================================================
+  # Redis Exporter
+  # ========================================================================
+  - job_name: 'redis'
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - 'redis-exporter:9121'
+        labels:
+          service: 'redis'
+          tier: 'cache'
+
+  # ========================================================================
+  # Node Exporter (System Metrics)
+  # ========================================================================
+  - job_name: 'node'
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'
+        labels:
+          service: 'node-exporter'
+          tier: 'infrastructure'
+
+  # ========================================================================
+  # cAdvisor (Container Metrics)
+  # ========================================================================
+  - job_name: 'cadvisor'
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - 'cadvisor:8080'
+        labels:
+          service: 'cadvisor'
+          tier: 'infrastructure'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'container_.*'
+        action: keep
+
+  # ========================================================================
+  # Nginx Metrics
+  # ========================================================================
+  - job_name: 'nginx'
+    scrape_interval: 30s
+    static_configs:
+      - targets:
+          - 'nginx-exporter:9113'
+        labels:
+          service: 'nginx'
+          tier: 'infrastructure'
+
+  # ========================================================================
+  # Discord Bot Metrics
+  # ========================================================================
+  - job_name: 'discord-bot'
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+          - 'bot-hub:9090'
+        labels:
+          service: 'discord-bot'
+          tier: 'bots'
+    metrics_path: '/metrics/discord'
+
+  # ========================================================================
+  # Twitter Bot Metrics
+  # ========================================================================
+  - job_name: 'twitter-bot'
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+          - 'bot-hub:9090'
+        labels:
+          service: 'twitter-bot'
+          tier: 'bots'
+    metrics_path: '/metrics/twitter'
+
+  # ========================================================================
+  # Solana RPC Monitoring
+  # ========================================================================
+  - job_name: 'solana-rpc'
+    scrape_interval: 60s
+    metrics_path: '/probe'
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - 'https://api.devnet.solana.com'
+          - 'https://api.mainnet-beta.solana.com'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'blackbox-exporter:9115'
+
+# ============================================================================
+# Alert Rules Example (create separate files in rules/)
+# ============================================================================
+# groups:
+#   - name: zenbeasts_alerts
+#     interval: 30s
+#     rules:
+#       - alert: BotHubDown
+#         expr: up{job="bot-hub"} == 0
+#         for: 5m
+#         labels:
+#           severity: critical
+#         annotations:
+#           summary: "Bot Hub is down"
+#           description: "Bot Hub has been down for more than 5 minutes"
+#
+#       - alert: HighErrorRate
+#         expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+#         for: 5m
+#         labels:
+#           severity: warning
+#         annotations:
+#           summary: "High error rate detected"
+#           description: "Error rate is above 5% for 5 minutes"
+#
+#       - alert: HighMemoryUsage
+#         expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+#         for: 10m
+#         labels:
+#           severity: warning
+#         annotations:
+#           summary: "High memory usage"
+#           description: "Memory usage is above 90%"
+#
+#       - alert: HighCPUUsage
+#         expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+#         for: 10m
+#         labels:
+#           severity: warning
+#         annotations:
+#           summary: "High CPU usage"
+#           description: "CPU usage is above 80%"
+#
+#       - alert: DatabaseConnectionsFailing
+#         expr: pg_up == 0
+#         for: 2m
+#         labels:
+#           severity: critical
+#         annotations:
+#           summary: "PostgreSQL is down"
+#           description: "Cannot connect to PostgreSQL database"
+
+# ============================================================================
+# Usage:
+#
+# 1. Start Prometheus:
+#    docker run -d \
+#      -p 9090:9090 \
+#      -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+#      --name prometheus \
+#      prom/prometheus
+#
+# 2. Access Prometheus UI:
+#    http://localhost:9090
+#
+# 3. Query examples:
+#    - up{job="bot-hub"}
+#    - rate(http_requests_total[5m])
+#    - container_memory_usage_bytes{name="bot-hub"}
+#    - bot_messages_sent_total
+#
+# 4. Integration with Grafana:
+#    - Add Prometheus data source: http://prometheus:9090
+#    - Import dashboards from grafana/dashboards/
+#
+# ============================================================================

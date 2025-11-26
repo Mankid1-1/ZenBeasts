@@ -1,0 +1,137 @@
+{
+  "version": "0.1.0",
+  "name": "zenbeasts",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "zenMint", "isMut": false, "isSigner": false },
+        { "name": "treasury", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "cooldown", "type": "u64" }]
+    },
+    {
+      "name": "createBeast",
+      "accounts": [
+        { "name": "beastAccount", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "nftMint", "isMut": true, "isSigner": false },
+        { "name": "nftTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "metadata", "isMut": true, "isSigner": false },
+        { "name": "masterEdition", "isMut": true, "isSigner": false },
+        { "name": "payer", "isMut": true, "isSigner": true },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "associatedTokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false },
+        { "name": "rent", "isMut": false, "isSigner": false },
+        { "name": "tokenMetadataProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "seed", "type": "u64" },
+        { "name": "name", "type": "string" },
+        { "name": "uri", "type": "string" }
+      ]
+    },
+    {
+      "name": "performActivity",
+      "accounts": [
+        { "name": "payer", "isMut": true, "isSigner": true },
+        { "name": "beastAccount", "isMut": true, "isSigner": false },
+        { "name": "programState", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "activityType", "type": "u8" }]
+    },
+    {
+      "name": "upgradeTrait",
+      "accounts": [
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "beastAccount", "isMut": true, "isSigner": false },
+        { "name": "programState", "isMut": false, "isSigner": false },
+        { "name": "userZenAta", "isMut": true, "isSigner": false },
+        { "name": "treasury", "isMut": true, "isSigner": false },
+        { "name": "zenMint", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "traitIndex", "type": "u8" },
+        { "name": "newValue", "type": "u8" },
+        { "name": "zenAmount", "type": "u64" }
+      ]
+    },
+    {
+      "name": "claimRewards",
+      "accounts": [
+        { "name": "user", "isMut": true, "isSigner": true },
+        { "name": "beastAccount", "isMut": true, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "breedBeasts",
+      "accounts": [
+        { "name": "payer", "isMut": true, "isSigner": true },
+        { "name": "parentA", "isMut": true, "isSigner": false },
+        { "name": "parentB", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "childBeast", "isMut": true, "isSigner": false },
+        { "name": "childMint", "isMut": true, "isSigner": false },
+        { "name": "childTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "payerZenAta", "isMut": true, "isSigner": false },
+        { "name": "treasury", "isMut": true, "isSigner": false },
+        { "name": "zenMint", "isMut": false, "isSigner": false },
+        { "name": "metadata", "isMut": true, "isSigner": false },
+        { "name": "masterEdition", "isMut": true, "isSigner": false },
+        { "name": "tokenMetadataProgram", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "associatedTokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false },
+        { "name": "rent", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "seed", "type": "u64" },
+        { "name": "name", "type": "string" },
+        { "name": "uri", "type": "string" },
+        { "name": "zenAmount", "type": "u64" }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "beastAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "mint", "type": "publicKey" },
+          { "name": "owner", "type": "publicKey" },
+          { "name": "traits", "type": { "array": ["u8", 10] } },
+          { "name": "rarityScore", "type": "u64" },
+          { "name": "lastActivity", "type": "i64" },
+          { "name": "activityCount", "type": "u32" },
+          { "name": "pendingRewards", "type": "u64" },
+          { "name": "parents", "type": { "array": ["publicKey", 2] } },
+          { "name": "generation", "type": "u8" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "programConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "authority", "type": "publicKey" },
+          { "name": "zenMint", "type": "publicKey" },
+          { "name": "treasury", "type": "publicKey" },
+          { "name": "activityCooldown", "type": "i64" },
+          { "name": "upgradeCost", "type": "u64" },
+          { "name": "burnPercentage", "type": "u8" },
+          { "name": "totalMinted", "type": "u64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    }
+  ]
+}

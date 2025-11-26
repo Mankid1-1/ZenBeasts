@@ -1,0 +1,82 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1. Deploy to Devnet",
+            "type": "npm",
+            "script": "deploy:devnet",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Builds the Anchor program and deploys it to Solana Devnet."
+        },
+        {
+            "label": "2. Initialize Program",
+            "type": "npm",
+            "script": "initialize",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Initializes the program with default configuration (cooldowns, costs, etc.). Run this ONCE after deployment."
+        },
+        {
+            "label": "3. Verify Deployment",
+            "type": "npm",
+            "script": "verify:deployment",
+            "group": "test",
+            "problemMatcher": [],
+            "detail": "Checks if the program is correctly deployed and accessible on Devnet."
+        },
+        {
+            "label": "4. Deploy Frontend (Vercel)",
+            "type": "npm",
+            "script": "deploy:frontend:vercel",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Deploys the Next.js frontend to Vercel (Production env)."
+        },
+        {
+            "label": "5. Mint Sample Beast",
+            "type": "npm",
+            "script": "mint-sample",
+            "group": "test",
+            "problemMatcher": [],
+            "detail": "Mints a sample Beast to verify the minting flow."
+        },
+        {
+            "label": "Setup Tester Wallet",
+            "type": "shell",
+            "command": "npx ts-node scripts/setup-tester-wallet.ts ${input:walletAddress}",
+            "problemMatcher": [],
+            "detail": "Airdrops Devnet SOL to a tester wallet.",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Launch Private Test (Full Sequence)",
+            "dependsOn": [
+                "1. Deploy to Devnet",
+                "2. Initialize Program",
+                "3. Verify Deployment",
+                "4. Deploy Frontend (Vercel)"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "detail": "Runs the full sequence: Deploy -> Initialize -> Verify -> Deploy Frontend."
+        }
+    ],
+    "inputs": [
+        {
+            "id": "walletAddress",
+            "description": "Enter the tester's wallet address",
+            "default": "",
+            "type": "promptString"
+        }
+    ]
+}

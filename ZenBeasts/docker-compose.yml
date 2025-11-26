@@ -1,0 +1,368 @@
+# ZenBeasts Docker Compose Configuration
+# Version: 1.0.0
+# Full stack deployment with all services
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Redis - Caching and session storage
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: zenbeasts-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - zenbeasts-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ============================================================================
+  # PostgreSQL - Optional database for analytics
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: zenbeasts-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zenbeasts}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - zenbeasts-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ============================================================================
+  # Bot Hub - Automation orchestrator
+  # ============================================================================
+  bot-hub:
+    build:
+      context: ./bot-hub
+      dockerfile: Dockerfile
+    container_name: zenbeasts-bot-hub
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      # Discord Configuration
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+
+      # Twitter Configuration
+      TWITTER_API_KEY: ${TWITTER_API_KEY}
+      TWITTER_API_SECRET: ${TWITTER_API_SECRET}
+      TWITTER_ACCESS_TOKEN: ${TWITTER_ACCESS_TOKEN}
+      TWITTER_ACCESS_TOKEN_SECRET: ${TWITTER_ACCESS_TOKEN_SECRET}
+      TWITTER_BEARER_TOKEN: ${TWITTER_BEARER_TOKEN}
+
+      # OpenAI Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4-turbo-preview}
+
+      # Anthropic Configuration
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: 0
+
+      # PostgreSQL Configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-zenbeasts}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+
+      # Bot Hub Settings
+      BOT_HUB_PORT: 5000
+      BOT_HUB_HOST: 0.0.0.0
+      DEBUG_MODE: ${DEBUG_MODE:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # Webhooks
+      WEBHOOK_URL: ${WEBHOOK_URL:-}
+      ERROR_WEBHOOK_URL: ${ERROR_WEBHOOK_URL:-}
+
+      # Solana Configuration
+      SOLANA_RPC_URL: ${SOLANA_RPC_URL:-https://api.devnet.solana.com}
+      SOLANA_NETWORK: ${SOLANA_NETWORK:-devnet}
+      HELIUS_API_KEY: ${HELIUS_API_KEY:-}
+
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "5000:5000"
+      - "9090:9090"  # Prometheus metrics
+    volumes:
+      - ./bot-hub/config:/app/config
+      - ./bot-hub/data:/app/data
+      - ./bot-hub/logs:/app/logs
+    networks:
+      - zenbeasts-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================================================
+  # Frontend - Next.js application
+  # ============================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    container_name: zenbeasts-frontend
+    restart: unless-stopped
+    environment:
+      # Solana Configuration
+      NEXT_PUBLIC_SOLANA_NETWORK: ${NEXT_PUBLIC_SOLANA_NETWORK:-devnet}
+      NEXT_PUBLIC_SOLANA_RPC_HOST: ${NEXT_PUBLIC_SOLANA_RPC_HOST:-https://api.devnet.solana.com}
+
+      # Program IDs
+      NEXT_PUBLIC_NFT_FACTORY_PROGRAM_ID: ${NEXT_PUBLIC_NFT_FACTORY_PROGRAM_ID}
+      NEXT_PUBLIC_ACTIVITIES_PROGRAM_ID: ${NEXT_PUBLIC_ACTIVITIES_PROGRAM_ID}
+      NEXT_PUBLIC_ECONOMY_PROGRAM_ID: ${NEXT_PUBLIC_ECONOMY_PROGRAM_ID}
+
+      # Helius API
+      NEXT_PUBLIC_HELIUS_API_KEY: ${NEXT_PUBLIC_HELIUS_API_KEY}
+
+      # API Configuration
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://api:8080}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://api:8080}
+
+      # Feature Flags
+      NEXT_PUBLIC_ENABLE_COMPRESSED_NFTS: ${NEXT_PUBLIC_ENABLE_COMPRESSED_NFTS:-false}
+      NEXT_PUBLIC_ENABLE_STAKING: ${NEXT_PUBLIC_ENABLE_STAKING:-false}
+      NEXT_PUBLIC_ENABLE_BREEDING: ${NEXT_PUBLIC_ENABLE_BREEDING:-false}
+
+      # Analytics
+      NEXT_PUBLIC_GA_TRACKING_ID: ${NEXT_PUBLIC_GA_TRACKING_ID:-}
+      NEXT_PUBLIC_MIXPANEL_TOKEN: ${NEXT_PUBLIC_MIXPANEL_TOKEN:-}
+
+      # Environment
+      NEXT_PUBLIC_ENVIRONMENT: ${ENVIRONMENT:-production}
+
+      # Redis (for caching)
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3000:3000"
+    networks:
+      - zenbeasts-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================================================
+  # API Server - Backend API (optional, if implemented)
+  # ============================================================================
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: zenbeasts-api
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      # Solana Configuration
+      SOLANA_RPC_URL: ${SOLANA_RPC_URL:-https://api.devnet.solana.com}
+      SOLANA_NETWORK: ${SOLANA_NETWORK:-devnet}
+      HELIUS_API_KEY: ${HELIUS_API_KEY}
+
+      # Program IDs
+      NFT_FACTORY_PROGRAM_ID: ${NFT_FACTORY_PROGRAM_ID}
+      ACTIVITIES_PROGRAM_ID: ${ACTIVITIES_PROGRAM_ID}
+      ECONOMY_PROGRAM_ID: ${ECONOMY_PROGRAM_ID}
+
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-zenbeasts}
+
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+
+      # API Settings
+      PORT: 8080
+      HOST: 0.0.0.0
+      NODE_ENV: production
+
+      # Security
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./api/logs:/app/logs
+    networks:
+      - zenbeasts-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - api  # Only start when 'api' profile is active
+
+  # ============================================================================
+  # Nginx - Reverse proxy and load balancer
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: zenbeasts-nginx
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - bot-hub
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+    networks:
+      - zenbeasts-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - nginx  # Only start when 'nginx' profile is active
+
+  # ============================================================================
+  # Prometheus - Metrics collection
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: zenbeasts-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - zenbeasts-network
+    profiles:
+      - monitoring  # Only start when 'monitoring' profile is active
+
+  # ============================================================================
+  # Grafana - Monitoring dashboard
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: zenbeasts-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-changeme}
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - zenbeasts-network
+    profiles:
+      - monitoring  # Only start when 'monitoring' profile is active
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  zenbeasts-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================================================
+# Volumes - Persistent data storage
+# ============================================================================
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  nginx-logs:
+    driver: local
+
+# ============================================================================
+# Usage Instructions
+# ============================================================================
+#
+# Basic usage:
+#   docker-compose up -d                    # Start core services
+#   docker-compose down                     # Stop all services
+#   docker-compose logs -f                  # View logs
+#   docker-compose ps                       # List running services
+#
+# With profiles:
+#   docker-compose --profile api up -d      # Include API server
+#   docker-compose --profile nginx up -d    # Include Nginx
+#   docker-compose --profile monitoring up -d  # Include monitoring stack
+#
+# Full stack:
+#   docker-compose --profile api --profile nginx --profile monitoring up -d
+#
+# Individual services:
+#   docker-compose up -d redis postgres     # Only databases
+#   docker-compose restart bot-hub          # Restart specific service
+#
+# Rebuild after changes:
+#   docker-compose build --no-cache         # Rebuild all images
+#   docker-compose up -d --force-recreate   # Recreate containers
+#
+# Clean up:
+#   docker-compose down -v                  # Remove volumes (data loss!)
+#   docker system prune -a                  # Clean Docker system
+#
+# Environment variables:
+#   Copy .env.template to .env and configure before running
+#
+# ============================================================================

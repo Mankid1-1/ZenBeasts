@@ -1,0 +1,31 @@
+{
+  "name": "zenbeasts-root",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts",
+    "build": "tsc -p tsconfig.json",
+    "build:program": "anchor build",
+    "build:frontend": "cd frontend && npm run build",
+    "deploy:devnet": "pwsh scripts/build-and-deploy.ps1 -Cluster devnet",
+    "deploy:mainnet": "pwsh scripts/build-and-deploy.ps1 -Cluster mainnet",
+    "deploy:frontend:vercel": "pwsh scripts/deploy-frontend.ps1 -Platform vercel -Environment production",
+    "deploy:frontend:netlify": "pwsh scripts/deploy-frontend.ps1 -Platform netlify -Environment production",
+    "deploy:frontend:preview": "pwsh scripts/deploy-frontend.ps1 -Platform vercel -Environment preview",
+    "verify:deployment": "npm run build && node dist/scripts/verify-deployment.js",
+    "initialize": "node dist/scripts/initialize.js",
+    "mint-sample": "node dist/scripts/mint-sample.js",
+    "test:activity": "node dist/scripts/perform-activity.js",
+    "test:upgrade": "node dist/scripts/upgrade-test.js",
+    "test:breed": "node dist/scripts/breed-test.js"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@metaplex-foundation/mpl-token-metadata": "^3.2.0",
+    "@solana/spl-token": "^0.1.8",
+    "@solana/web3.js": "^1.95.6",
+    "@types/mocha": "^10.0.10",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.9.3"
+  }
+}

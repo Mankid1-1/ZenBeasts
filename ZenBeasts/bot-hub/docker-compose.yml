@@ -1,0 +1,306 @@
+# ZenBeasts Bot Hub - Docker Compose Configuration
+# Deploy entire bot infrastructure with: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # Bot Orchestrator (Main Service)
+  # ==========================================
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenbeasts-orchestrator
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - redis
+      - postgres
+    command: python orchestrator.py start
+    healthcheck:
+      test: ["CMD", "python", "orchestrator.py", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # Twitter Bot
+  # ==========================================
+  twitter-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenbeasts-twitter-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - orchestrator
+    command: python -m bots.twitter_bot
+
+  # ==========================================
+  # Discord Bot
+  # ==========================================
+  discord-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenbeasts-discord-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - orchestrator
+    command: python -m bots.discord_bot
+
+  # ==========================================
+  # Analytics Bot
+  # ==========================================
+  analytics-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenbeasts-analytics-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - orchestrator
+      - postgres
+    command: python -m bots.analytics_bot
+
+  # ==========================================
+  # Monitoring Bot
+  # ==========================================
+  monitoring-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenbeasts-monitoring-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - orchestrator
+    command: python -m bots.monitoring_bot
+
+  # ==========================================
+  # Web Dashboard
+  # ==========================================
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zenbeasts-dashboard
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./config:/app/config
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - orchestrator
+      - postgres
+    command: python dashboard.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # Redis (Caching & Queue)
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: zenbeasts-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - zenbeasts-network
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-zenbeasts}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ==========================================
+  # PostgreSQL (Database)
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: zenbeasts-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zenbeasts
+      POSTGRES_USER: zenbeasts
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-zenbeasts_secure_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - zenbeasts-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zenbeasts"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Grafana (Monitoring Dashboard)
+  # ==========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: zenbeasts-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - prometheus
+
+  # ==========================================
+  # Prometheus (Metrics Collection)
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: zenbeasts-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - zenbeasts-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  # ==========================================
+  # Nginx (Reverse Proxy)
+  # ==========================================
+  nginx:
+    image: nginx:alpine
+    container_name: zenbeasts-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - zenbeasts-network
+    depends_on:
+      - dashboard
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  zenbeasts-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ==========================================
+# Volumes (Persistent Storage)
+# ==========================================
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  grafana-data:
+    driver: local
+  prometheus-data:
+    driver: local
+
+# ==========================================
+# Usage Instructions
+# ==========================================
+# Start all services:
+#   docker-compose up -d
+#
+# Start specific service:
+#   docker-compose up -d twitter-bot
+#
+# View logs:
+#   docker-compose logs -f orchestrator
+#   docker-compose logs -f twitter-bot
+#
+# Stop all services:
+#   docker-compose down
+#
+# Stop and remove volumes:
+#   docker-compose down -v
+#
+# Rebuild and restart:
+#   docker-compose up -d --build
+#
+# Check status:
+#   docker-compose ps
+#
+# Access services:
+#   Dashboard: http://localhost:5000
+#   Grafana: http://localhost:3000 (admin/admin)
+#   Prometheus: http://localhost:9090
+#   Redis: localhost:6379
+#   PostgreSQL: localhost:5432

@@ -1,0 +1,539 @@
+# ZenBeasts Installation Guide
+
+## Quick Start
+
+The ZenBeasts project includes automated installation scripts for all components. Choose your installation method below.
+
+## 📋 Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Installation Methods](#installation-methods)
+3. [Component Installation](#component-installation)
+4. [Configuration](#configuration)
+5. [Verification](#verification)
+6. [Troubleshooting](#troubleshooting)
+
+---
+
+## Prerequisites
+
+### System Requirements
+
+- **Operating System**: Windows 10/11, macOS 10.15+, or Linux (Ubuntu 20.04+)
+- **RAM**: Minimum 8GB (16GB recommended)
+- **Disk Space**: 20GB free space
+- **Internet Connection**: Required for installation
+
+### Required Tools (Auto-installed by scripts)
+
+The installation scripts will automatically install these if missing:
+
+- **Git** (2.30+)
+- **Node.js** (18.x LTS) & npm
+- **Rust** (latest stable)
+- **Solana CLI** (1.17+)
+- **Anchor Framework** (0.29+)
+- **Python** (3.10+)
+- **Docker** (optional, for containerized setup)
+
+---
+
+## Installation Methods
+
+### Method 1: One-Command Installation (Recommended)
+
+#### Windows (PowerShell - Run as Administrator)
+
+```powershell
+# Download and run the installer
+irm https://raw.githubusercontent.com/YOUR_REPO/ZenBeasts/main/install.ps1 | iex
+
+# Or if you've already cloned the repo:
+cd ZenBeasts
+.\install.ps1
+```
+
+#### Linux/macOS (Bash)
+
+```bash
+# Download and run the installer
+curl -fsSL https://raw.githubusercontent.com/YOUR_REPO/ZenBeasts/main/install.sh | bash
+
+# Or if you've already cloned the repo:
+cd ZenBeasts
+chmod +x install.sh
+./install.sh
+```
+
+### Method 2: Docker Installation (Easiest)
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_REPO/ZenBeasts.git
+cd ZenBeasts
+
+# Run Docker setup
+docker-compose up -d
+
+# The entire stack will be available at:
+# - Frontend: http://localhost:3000
+# - Bot Hub Dashboard: http://localhost:5000
+# - API: http://localhost:8080
+```
+
+### Method 3: Manual Component Installation
+
+If you prefer to install specific components only:
+
+```powershell
+# Windows - Install only what you need
+.\setup\install-solana.ps1      # Solana development environment
+.\setup\install-bot-hub.ps1     # Bot automation hub
+.\setup\install-frontend.ps1    # Frontend application
+```
+
+```bash
+# Linux/macOS
+./setup/install-solana.sh       # Solana development environment
+./setup/install-bot-hub.sh      # Bot automation hub
+./setup/install-frontend.sh     # Frontend application
+```
+
+---
+
+## Component Installation
+
+### 1. Solana Smart Contract Development
+
+This installs the Rust toolchain, Solana CLI, and Anchor framework.
+
+**Windows:**
+```powershell
+.\setup\install-solana.ps1
+```
+
+**Linux/macOS:**
+```bash
+./setup/install-solana.sh
+```
+
+**What gets installed:**
+- Rust (rustc, cargo)
+- Solana CLI tools
+- Anchor framework (0.29+)
+- SPL Token CLI
+- Development keypairs
+
+**Post-Installation:**
+```bash
+# Verify installation
+solana --version
+anchor --version
+
+# Set to devnet
+solana config set --url devnet
+
+# Create a new keypair (or import existing)
+solana-keygen new
+
+# Airdrop SOL for testing
+solana airdrop 2
+```
+
+### 2. Bot Hub (Automation System)
+
+Installs Python environment and all bot dependencies.
+
+**Windows:**
+```powershell
+.\setup\install-bot-hub.ps1
+```
+
+**Linux/macOS:**
+```bash
+./setup/install-bot-hub.sh
+```
+
+**What gets installed:**
+- Python 3.10+
+- Virtual environment
+- Discord.py, Tweepy, OpenAI
+- Redis (optional)
+- Bot Hub dependencies
+
+**Post-Installation:**
+```bash
+# Activate virtual environment
+# Windows:
+.\bot-hub\venv\Scripts\activate
+
+# Linux/macOS:
+source bot-hub/venv/bin/activate
+
+# Run configuration wizard
+python setup/config-wizard.py
+```
+
+### 3. Frontend Application
+
+Installs Node.js environment and frontend dependencies.
+
+**Windows:**
+```powershell
+.\setup\install-frontend.ps1
+```
+
+**Linux/macOS:**
+```bash
+./setup/install-frontend.sh
+```
+
+**What gets installed:**
+- Node.js 18.x LTS
+- npm/yarn
+- React, Next.js
+- Solana web3.js
+- Wallet adapters
+
+**Post-Installation:**
+```bash
+cd frontend
+
+# Development server
+npm run dev
+
+# Production build
+npm run build
+npm start
+```
+
+---
+
+## Configuration
+
+### Interactive Configuration Wizard
+
+Run the configuration wizard to set up API keys and environment variables:
+
+**Windows:**
+```powershell
+.\setup\config-wizard.ps1
+```
+
+**Linux/macOS:**
+```bash
+./setup/config-wizard.sh
+```
+
+The wizard will guide you through:
+
+1. **Solana Configuration**
+   - Network selection (devnet/testnet/mainnet)
+   - RPC endpoint
+   - Program IDs
+
+2. **Bot Hub Configuration**
+   - Discord bot token
+   - Twitter API keys
+   - OpenAI API key (optional)
+   - Webhook URLs
+
+3. **Frontend Configuration**
+   - API endpoints
+   - Wallet adapter settings
+   - Analytics keys
+
+4. **Database Configuration**
+   - Redis connection
+   - PostgreSQL (optional)
+
+### Manual Configuration
+
+If you prefer to configure manually:
+
+1. **Copy environment templates:**
+   ```bash
+   cp .env.template .env
+   cp bot-hub/.env.template bot-hub/.env
+   cp frontend/.env.template frontend/.env.local
+   ```
+
+2. **Edit each `.env` file** with your API keys and configuration
+
+3. **Required API Keys:**
+   - **Discord Bot Token**: https://discord.com/developers/applications
+   - **Twitter API Keys**: https://developer.twitter.com/
+   - **Helius API Key**: https://helius.xyz/ (for DAS API)
+   - **OpenAI API Key** (optional): https://platform.openai.com/
+
+---
+
+## Verification
+
+### Automated Health Check
+
+Run the verification script to ensure everything is installed correctly:
+
+**Windows:**
+```powershell
+.\setup\verify-setup.ps1
+```
+
+**Linux/macOS:**
+```bash
+./setup/verify-setup.sh
+```
+
+The script checks:
+- ✅ All required tools are installed
+- ✅ Correct versions
+- ✅ Environment variables are set
+- ✅ Network connectivity
+- ✅ API keys are valid
+- ✅ Services are running
+
+### Manual Verification
+
+```bash
+# Check Solana environment
+solana --version
+anchor --version
+solana config get
+
+# Check Node.js environment
+node --version
+npm --version
+
+# Check Python environment
+python --version
+pip --version
+
+# Check Git
+git --version
+
+# Test smart contract build
+cd programs
+anchor build
+anchor test
+
+# Test frontend
+cd frontend
+npm run build
+
+# Test Bot Hub
+cd bot-hub
+python -m pytest tests/
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+#### Issue: "PowerShell scripts are disabled"
+
+**Solution:**
+```powershell
+# Run PowerShell as Administrator
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+#### Issue: "Rust/Cargo not found after installation"
+
+**Solution:**
+```powershell
+# Windows: Restart your terminal/PowerShell
+# Or manually add to PATH:
+$env:Path += ";$env:USERPROFILE\.cargo\bin"
+
+# Linux/macOS: Source the cargo environment
+source $HOME/.cargo/env
+```
+
+#### Issue: "Anchor build fails with version mismatch"
+
+**Solution:**
+```bash
+# Update Anchor to latest version
+cargo install --git https://github.com/coral-xyz/anchor anchor-cli --locked
+
+# Or specific version
+avm install 0.29.0
+avm use 0.29.0
+```
+
+#### Issue: "Python virtual environment activation fails"
+
+**Solution:**
+```powershell
+# Windows: Enable script execution
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
+# Or use alternative activation
+.\bot-hub\venv\Scripts\Activate.ps1
+```
+
+#### Issue: "Node.js/npm not found after installation"
+
+**Solution:**
+```bash
+# Restart terminal, or manually add to PATH
+# Windows (PowerShell):
+$env:Path += ";C:\Program Files\nodejs"
+
+# Verify
+node --version
+npm --version
+```
+
+#### Issue: "Docker containers won't start"
+
+**Solution:**
+```bash
+# Check Docker is running
+docker --version
+docker ps
+
+# Reset Docker environment
+docker-compose down -v
+docker-compose up -d --force-recreate
+
+# Check logs
+docker-compose logs -f
+```
+
+#### Issue: "Port already in use"
+
+**Solution:**
+```bash
+# Find and kill process on Windows
+netstat -ano | findstr :3000
+taskkill /PID <PID> /F
+
+# Find and kill process on Linux/macOS
+lsof -ti:3000 | xargs kill -9
+```
+
+### Getting Help
+
+1. **Check the logs:**
+   ```bash
+   # Installation logs
+   cat setup/install.log
+
+   # Bot Hub logs
+   tail -f bot-hub/logs/orchestrator.log
+
+   # Docker logs
+   docker-compose logs -f
+   ```
+
+2. **Run diagnostics:**
+   ```bash
+   .\setup\verify-setup.ps1 --verbose
+   ```
+
+3. **Community Support:**
+   - Discord: [Your Discord Server]
+   - GitHub Issues: [Your GitHub Repo]/issues
+   - Documentation: [Your Docs Site]
+
+---
+
+## Next Steps
+
+After successful installation:
+
+1. **Build the smart contracts:**
+   ```bash
+   cd programs
+   anchor build
+   anchor deploy
+   ```
+
+2. **Start the Bot Hub:**
+   ```bash
+   cd bot-hub
+   python orchestrator.py
+   ```
+
+3. **Launch the frontend:**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+4. **Read the documentation:**
+   - [Architecture Overview](./ARCHITECTURE.md)
+   - [Tokenomics](./TOKENOMICS.md)
+   - [Development Guide](./DEVELOPMENT.md)
+   - [Bot Hub Documentation](./bot-hub/README.md)
+
+---
+
+## Uninstallation
+
+To uninstall ZenBeasts components:
+
+**Windows:**
+```powershell
+.\setup\uninstall.ps1
+```
+
+**Linux/macOS:**
+```bash
+./setup/uninstall.sh
+```
+
+This will:
+- Remove installed dependencies
+- Clean up configuration files
+- Preserve your data (optional backup)
+
+---
+
+## System Requirements by Component
+
+| Component | RAM | Disk Space | Network |
+|-----------|-----|------------|---------|
+| Smart Contracts | 4GB | 5GB | Low |
+| Bot Hub | 2GB | 2GB | Medium |
+| Frontend | 2GB | 1GB | Low |
+| Full Stack | 8GB+ | 10GB+ | Medium |
+
+---
+
+## Security Notes
+
+1. **Never commit `.env` files** to version control
+2. **Use environment variables** for all API keys
+3. **Run Bot Hub in production** with proper authentication
+4. **Keep dependencies updated** regularly
+5. **Use hardware wallets** for mainnet deployments
+6. **Enable 2FA** on all service accounts
+
+---
+
+## FAQ
+
+**Q: Can I install only the Bot Hub without Solana tools?**
+A: Yes, use `.\setup\install-bot-hub.ps1` for component-specific installation.
+
+**Q: Do I need Docker?**
+A: No, Docker is optional. The manual installation works without Docker.
+
+**Q: Can I use an existing Solana installation?**
+A: Yes, the installer will detect existing installations and skip them.
+
+**Q: How do I update to the latest version?**
+A: Run `git pull` and then `.\install.ps1 --update`
+
+**Q: Can I run this on Windows Subsystem for Linux (WSL)?**
+A: Yes, use the Linux installation scripts within WSL.
+
+---
+
+**Installation Complete! 🎉**
+
+Your ZenBeasts development environment is ready. Happy building!

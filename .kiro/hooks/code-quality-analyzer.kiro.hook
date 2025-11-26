@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Code Quality Analyzer",
+  "description": "Monitors source code files for changes and provides suggestions for code quality improvements including code smells, design patterns, best practices, readability, maintainability, and performance optimizations",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.rs",
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "C:\\Users\\mepep\\OneDrive\\Desktop\\Zbeasts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the modified code in the changed file for potential improvements. Focus on:\n\n1. **Code Smells**: Identify any code smells such as duplicated code, long functions, large classes, excessive parameters, or inappropriate intimacy between modules.\n\n2. **Design Patterns**: Suggest applicable design patterns that could improve the code structure and maintainability.\n\n3. **Best Practices**: Check adherence to language-specific and framework-specific best practices (Rust/Anchor for .rs files, TypeScript/React/Next.js for .ts/.tsx files, JavaScript/Node.js for .js files).\n\n4. **Readability**: Evaluate naming conventions, code organization, comments, and overall clarity. Suggest improvements for better code comprehension.\n\n5. **Maintainability**: Assess modularity, coupling, cohesion, and testability. Recommend refactoring opportunities.\n\n6. **Performance**: Identify potential performance bottlenecks, unnecessary computations, inefficient algorithms, or memory issues.\n\nFor each issue found, provide:\n- Clear description of the problem\n- Specific location in the code (if applicable)\n- Concrete suggestion for improvement\n- Brief explanation of why the change would be beneficial\n\nMaintain the existing functionality - do not suggest changes that would alter the intended behavior. Prioritize suggestions that have the most impact on code quality."
+  }
+}

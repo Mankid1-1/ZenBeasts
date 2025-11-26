@@ -1,0 +1,73 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_SOLANA_NETWORK": "@solana_network",
+    "NEXT_PUBLIC_RPC_URL": "@rpc_url",
+    "NEXT_PUBLIC_RPC_URL_BACKUP": "@rpc_url_backup",
+    "NEXT_PUBLIC_RPC_URL_TERTIARY": "@rpc_url_tertiary",
+    "NEXT_PUBLIC_PROGRAM_ID": "@program_id",
+    "NEXT_PUBLIC_ZEN_MINT": "@zen_mint",
+    "NEXT_PUBLIC_API_URL": "@api_url",
+    "NEXT_PUBLIC_HELIUS_API_KEY": "@helius_api_key"
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.devnet.solana.com https://api.mainnet-beta.solana.com https://rpc.ankr.com https://*.helius-rpc.com wss://api.devnet.solana.com wss://api.mainnet-beta.solana.com;"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.zenbeasts.io/:path*"
+    }
+  ]
+}
