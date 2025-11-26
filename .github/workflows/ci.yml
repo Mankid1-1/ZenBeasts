@@ -35,14 +35,20 @@ jobs:
         shell: bash
         run: |
           curl -sSfL https://release.solana.com/v1.17.17/install | sh
-          echo "::add-path::/home/runner/.local/share/solana/install/releases/1.17.17/solana-release/bin"
+          echo "/home/runner/.local/share/solana/install/releases/1.17.17/solana-release/bin" >> $GITHUB_PATH
           solana --version
 
       - name: Install Anchor CLI
         run: npm i -g @coral-xyz/anchor-cli
 
-      - name: Install Node dependencies
+      - name: Install Root dependencies
         run: npm ci
+
+      - name: Install API dependencies
+        run: npm ci --prefix api
+
+      - name: Install Frontend dependencies
+        run: npm ci --prefix frontend
 
       - name: Anchor build
         run: anchor build
@@ -50,7 +56,19 @@ jobs:
       - name: Typecheck
         run: npx tsc -p tsconfig.json --noEmit
 
-      - name: Run tests
+      - name: Build API
+        run: npm run --prefix api build --if-present
+
+      - name: Test API
+        run: npm --prefix api start & pid=$! && sleep 5 && kill $pid
+
+      - name: Build Frontend
+        run: npm run build --prefix frontend
+
+      - name: Test Frontend
+        run: npm test --prefix frontend
+
+      - name: Test Root
         env:
           SOLANA_RPC_URL: https://api.devnet.solana.com
           NEXT_PUBLIC_PROGRAM_ID: Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS

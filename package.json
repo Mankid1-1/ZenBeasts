@@ -7,11 +7,11 @@
     "build": "tsc -p tsconfig.json",
     "build:program": "anchor build",
     "build:frontend": "cd frontend && npm run build",
-    "deploy:devnet": "pwsh scripts/build-and-deploy.ps1 -Cluster devnet",
-    "deploy:mainnet": "pwsh scripts/build-and-deploy.ps1 -Cluster mainnet",
-    "deploy:frontend:vercel": "pwsh scripts/deploy-frontend.ps1 -Platform vercel -Environment production",
-    "deploy:frontend:netlify": "pwsh scripts/deploy-frontend.ps1 -Platform netlify -Environment production",
-    "deploy:frontend:preview": "pwsh scripts/deploy-frontend.ps1 -Platform vercel -Environment preview",
+    "deploy:devnet": "node scripts/build-and-deploy.js devnet",
+    "deploy:mainnet": "node scripts/build-and-deploy.js mainnet",
+    "deploy:frontend:vercel": "node scripts/deploy-frontend.js vercel production",
+    "deploy:frontend:netlify": "node scripts/deploy-frontend.js netlify production",
+    "deploy:frontend:preview": "node scripts/deploy-frontend.js vercel preview",
     "verify:deployment": "npm run build && node dist/scripts/verify-deployment.js",
     "initialize": "node dist/scripts/initialize.js",
     "mint-sample": "node dist/scripts/mint-sample.js",
@@ -22,10 +22,11 @@
   "devDependencies": {
     "@coral-xyz/anchor": "^0.29.0",
     "@metaplex-foundation/mpl-token-metadata": "^3.2.0",
-    "@solana/spl-token": "^0.1.8",
+    "@solana/spl-token": "^0.4.7",
     "@solana/web3.js": "^1.95.6",
     "@types/mocha": "^10.0.10",
     "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
 }

@@ -47,4 +47,4 @@ url = "https://devnet.helius-rpc.com"
 # url = "https://mainnet.helius-rpc.com"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "npm test"
