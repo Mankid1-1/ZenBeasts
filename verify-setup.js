@@ -48,7 +48,7 @@ checkFileExists('Anchor.toml', 'Anchor.toml exists');
 checkFileExists('frontend/tailwind.config.js', 'Tailwind config exists');
 checkFileExists('frontend/postcss.config.js', 'PostCSS config exists');
 checkFileExists('frontend/jest.config.js', 'Jest config exists');
-checkFileExists('frontend/.eslintrc.json', 'ESLint config exists');
+checkFileExists('eslint.config.js', 'ESLint config exists');
 checkFileExists('frontend/src/app/globals.css', 'Global CSS exists');
 checkFileExists('.env.example', 'Root .env.example exists');
 checkFileExists('frontend/.env.template', 'Frontend .env.template exists');
