@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "test": "ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --check '**/*.{ts,json,md}'",
+    "format:fix": "prettier --write '**/*.{ts,json,md}'",
     "build": "tsc -p tsconfig.json",
     "build:program": "anchor build",
     "build:frontend": "cd frontend && npm run build",
@@ -25,6 +29,12 @@
     "@solana/spl-token": "^0.4.7",
     "@solana/web3.js": "^1.95.6",
     "@types/mocha": "^10.0.10",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
