@@ -11,10 +11,20 @@ updates:
     schedule:
       interval: "daily"
 
+  - package-ecosystem: "npm"
+    directory: "/api"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "daily"
+
   # Enable version updates for cargo
   - package-ecosystem: "cargo"
     # Look for `Cargo.toml` and `lock` files in the `root` directory
-    directory: "/"
+    directory: "/programs/zenbeasts"
     # Check the cargo registry for updates every day (weekdays)
     schedule:
       interval: "daily"
