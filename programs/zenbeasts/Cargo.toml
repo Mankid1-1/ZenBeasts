@@ -19,7 +19,7 @@ default = []
 anchor-lang = "0.29.0"
 anchor-spl = "0.29.0"
 solana-program = "~1.17"
-mpl-token-metadata = "3.2.0"
+mpl-token-metadata = "5.1.1"
 
 [dev-dependencies]
 solana-program-test = "~1.17"
