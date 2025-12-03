@@ -30,7 +30,7 @@
     "@solana/spl-token": "^0.4.7",
     "@solana/web3.js": "^1.95.6",
     "@types/mocha": "^10.0.10",
-    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
     "@typescript-eslint/parser": "^8.48.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
