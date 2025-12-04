@@ -24,7 +24,7 @@
     "test:breed": "node dist/scripts/breed-test.js"
   },
   "devDependencies": {
-    "@coral-xyz/anchor": "^0.29.0",
+    "@coral-xyz/anchor": "^0.32.1",
     "@eslint/js": "^9.39.1",
     "@metaplex-foundation/mpl-token-metadata": "^3.2.0",
     "@solana/spl-token": "^0.4.7",
